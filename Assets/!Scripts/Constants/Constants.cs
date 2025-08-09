@@ -7,6 +7,8 @@ namespace WordBoggle
     {
         public static readonly int MAX_WORDS_IN_TREE = 25000;
         public static readonly int MAX_WORDS_IN_GRID = 5;
+        public static readonly int MAX_BONUS_IN_GAME = 3;
+        public static readonly int MAX_BLOCKS_IN_GAME = 2;
     }
 
     public class Node

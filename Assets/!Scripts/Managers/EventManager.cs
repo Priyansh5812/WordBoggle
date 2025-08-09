@@ -55,7 +55,15 @@ public static class EventManager
         get; private set;
     } = new();
 
+    public static FuncEvent<bool> IsGameOver
+    {
+        get; private set;
+    } = new();
 
+    public static FuncEvent<LetterTile, List<LetterTile>> GetBlockedNeighbours
+    {
+        get; private set;
+    } = new();
 
 }
 

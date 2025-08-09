@@ -35,9 +35,15 @@ public class BoggleHandler : MonoBehaviour
     }
 
     private void OnEndSelectionLogic()
-    {
+    {   
+
         Debug.Log("Ended");
         LetterTile.IsSelectionStarted = false;
+
+        // If game is over then refrain from proceeding further
+        if (EventManager.IsGameOver.Invoke()) 
+            return;
+
 
         string str = string.Empty;
 
@@ -45,9 +51,21 @@ public class BoggleHandler : MonoBehaviour
         {
             i.IsSelected = false;
             str += i.GetText();
+
         }
 
-        
+        // Checking whether the collected sequence contains any blocked tile. If any then terminate the function instantly
+        foreach (var i in tiles)
+        {
+            if (i.IsBlocked)
+            {
+                tiles.Clear();
+                return;
+            }
+        }
+
+
+
         Debug.Log("Word Selected : " + str);
 
         switch (EventManager.OnValidateWord.Invoke(str))
@@ -69,8 +87,29 @@ public class BoggleHandler : MonoBehaviour
         tiles.Clear();
     }
 
+    private void FreeBlockedNeighbourTiles(LetterTile tile)
+    {
+        // Get the Blocked Neighbours
+        List<LetterTile> blockedTiles = EventManager.GetBlockedNeighbours.Invoke(tile);
+
+        // Unblocked them
+        foreach (var b in blockedTiles)
+        {
+            b.IsBlocked = false;
+        }
+
+        // Release the resource for reuse
+        CollectionPool<List<LetterTile>, LetterTile>.Release(blockedTiles);
+    }
+
     private void OnValidWord(List<LetterTile> tiles)
-    {   
+    {
+        foreach (var i in tiles)
+        {
+            // Free Blocked Neighbour tiles (if any)
+            FreeBlockedNeighbourTiles(i);
+        }
+
         EventManager.OnValidWordSelected.Invoke(tiles);
     }
 
@@ -84,12 +123,16 @@ public class BoggleHandler : MonoBehaviour
         EventManager.OnInvalidWordSelected.Invoke();
     }
 
+
+
     private void DeinitListeners()
     {
         EventManager.OnSelectionStarted.RemoveListener(StartSelectionLogic);
         EventManager.OnSelect.RemoveListener(OnSelectLogic);
         EventManager.OnSelectionEnded.RemoveListener(OnEndSelectionLogic);
+
     }
+
 
 
     private void OnDisable()

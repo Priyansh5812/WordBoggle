@@ -3,26 +3,36 @@ using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
+using System;
 
 public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler
 {
     [SerializeField] TextMeshProUGUI m_text;
-    [SerializeField] List<Image> m_dots;
+    [SerializeField] Image BonusImage;
+    [SerializeField] Image BlockImage;
 
     [Header("Grid-Related")]
     [SerializeField] Vector2 m_index;
 
 
     [Header("Internals")]
+    private bool m_IsBonus = false;
+    private bool m_IsBlocked = false;
     public bool IsBonus
     {
-        get;
-        set;
+        get => m_IsBonus;
+        set
+        {
+            SetAsBonusTile(value);
+        }
     }
     public bool IsBlocked
     {
-        get;
-        set;
+        get => m_IsBlocked;
+        set
+        { 
+            SetAsBlockedTile(value);
+        }
     }
 
     private bool m_isSelected = false;
@@ -31,8 +41,6 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
         get => m_isSelected;
         set
         {   
-
-            OnSelection(value);
             m_isSelected = value;
         }
     }
@@ -51,9 +59,16 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
     public string GetText() => m_text.text;
     public Vector2 GetTileIndex() => m_index;
 
-    private void OnSelection(bool value)
-    { 
-        
+    private void SetAsBonusTile(bool value)
+    {
+        m_IsBonus = value;
+        BonusImage.gameObject.SetActive(value);
+    }
+
+    private void SetAsBlockedTile(bool value)
+    {
+        m_IsBlocked = value;
+        BlockImage.gameObject.SetActive(value);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -78,5 +93,15 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
     public void OnPointerUp(PointerEventData eventData)
     {
         EventManager.OnSelectionEnded.Invoke();
+    }
+
+
+    public void ResetTile()
+    {
+        this.SetLetter(string.Empty);
+        this.IsBonus = false;
+        this.IsBlocked = false;
+        this.IsSelected = false;
+        IsSelectionStarted = false;
     }
 }

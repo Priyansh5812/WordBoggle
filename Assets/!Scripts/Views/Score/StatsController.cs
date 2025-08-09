@@ -11,6 +11,12 @@ public class StatsController
         set;
     } = false;
 
+    public bool IsGameOver
+    {
+        get;
+        set;
+    } = false;
+
     GameConfig m_config;
     StatsView m_view;
     WaitForSeconds m_delay;
@@ -18,6 +24,7 @@ public class StatsController
     int m_score = 0;
     int m_totalBonusCount = 0;
     int totalWordsFound = 0;
+
     public StatsController(StatsView view, GameConfig config)
     { 
         m_config = config;
@@ -58,7 +65,7 @@ public class StatsController
                 yield return m_delay;
             }
         }
-
+        IsGameOver = true;
         m_view.TriggerGameOver((m_score , m_totalBonusCount, totalWordsFound));
 
     }
@@ -73,7 +80,10 @@ public class StatsController
         {
             str += i.GetText();
             if (i.IsBonus)
+            {
+                FreeBonusTile(i);
                 bonusLetterTiles++;
+            }
         }
 
         if (bonusLetterTiles != 0)
@@ -85,6 +95,21 @@ public class StatsController
 
         m_view.UpdateScoreUI(m_score);
         m_view.UpdateExistingWordsUI(str);
+    }
+
+    public void FreeBonusTile(LetterTile tile) => tile.IsBonus = false;
+
+    public bool GetIsGameOver() => IsGameOver;
+
+    public void ResetStats()
+    {
+        m_score = 0;
+        m_totalBonusCount = 0;
+        totalWordsFound = 0;
+        IsGamePaused = false;
+        IsGameOver = false;
+        m_view.UpdateScoreUI(m_score);
+        m_view.UpdateTimerUI(m_config.minutes, m_config.seconds);
     }
 
 }

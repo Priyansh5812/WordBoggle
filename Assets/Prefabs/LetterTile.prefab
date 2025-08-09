@@ -714,11 +714,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_text: {fileID: 3607313622835476064}
-  m_dots:
-  - {fileID: 1098425389137527345}
-  - {fileID: 6470689576986634842}
-  - {fileID: 9162637207802812848}
+  BonusImage: {fileID: 5834477899097262643}
+  BlockImage: {fileID: 9075165230399496046}
   m_index: {x: 0, y: 0}
-  m_score: 0
-  m_isBonus: 0
-  isBlocked: 0

@@ -49,6 +49,7 @@ public class StatsView : MonoBehaviour
     private void InitListeners()
     {
         EventManager.OnValidWordSelected.AddListener(m_Controller.ProcessValidWord);
+        EventManager.IsGameOver.AddListener(m_Controller.GetIsGameOver);
         btn_Pause.onClick.AddListener(TriggerGamePause);
         btn_Resume.onClick.AddListener(ResumeGame);
         btn_Quit.onClick.AddListener(QuitGame);
@@ -74,8 +75,21 @@ public class StatsView : MonoBehaviour
         wordText?.SetText(word);
     }
 
+    private void ResetExistingWordsUI()
+    {
+        TextMeshProUGUI[] existingWords = m_ExistingWordParent.GetComponentsInChildren<TextMeshProUGUI>();
+
+        foreach (var i in existingWords)
+        {
+            Destroy(i.gameObject);
+        }
+    }
+
     private void TriggerGamePause()
-    {   
+    {
+        if (m_Controller.IsGameOver)
+            return;
+
         cg_Pause.alpha = 1.0f;
         cg_Pause.interactable = cg_Pause.blocksRaycasts = true;
         m_Controller.IsGamePaused = true;
@@ -106,6 +120,20 @@ public class StatsView : MonoBehaviour
 
     private void RestartGame()
     {
+        cg_GameOver.alpha = 0.0f;
+        cg_GameOver.interactable = cg_GameOver.blocksRaycasts = false;
+
+        //-----------------------------------------------
+
+        m_Controller.ResetStats();
+
+        //-----------------------------------------------
+
+        ResetExistingWordsUI();
+
+        StartCoroutine(m_Controller.TimerRoutine());
+
+        //-----------------------------------------------
         EventManager.OnGameRestart.Invoke();
     }
     #endregion
@@ -113,6 +141,7 @@ public class StatsView : MonoBehaviour
     private void DeinitListeners()
     {
         EventManager.OnValidWordSelected.RemoveListener(m_Controller.ProcessValidWord);
+        EventManager.IsGameOver.RemoveListener(m_Controller.GetIsGameOver);
         btn_Pause.onClick.RemoveListener(TriggerGamePause);
         btn_Resume.onClick.RemoveListener(ResumeGame);
         btn_Quit.onClick.RemoveListener(QuitGame);

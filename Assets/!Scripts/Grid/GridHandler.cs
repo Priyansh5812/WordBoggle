@@ -26,6 +26,8 @@ public class GridHandler : MonoBehaviour
     private void InitListeners()
     {
         EventManager.OnValidateWord.AddListener(ValidateSelectedWord);
+        EventManager.OnGameRestart.AddListener(ReinitGrid);
+        EventManager.GetBlockedNeighbours.AddListener(GetBlockedNeighbours);
     }
 
     private void InitializeGrid()
@@ -101,7 +103,6 @@ public class GridHandler : MonoBehaviour
 
     IEnumerator InitializeWordBoggle()
     {
-
         string str;
         for (int i = 0; i < wordsToInsert.Count; i++)
         {
@@ -123,15 +124,62 @@ public class GridHandler : MonoBehaviour
                 if (IsValidTile(grid[i, j]))
                 {
                     string rand_le = ((char)Random.Range((int)'a', ((int)'z' + 1))).ToString();
+
+                    if (LetterReg.ContainsKey(rand_le[0]))
+                    {
+                        j--;
+                        continue;
+                    }
+
                     grid[i, j].SetLetter(rand_le);
                     Debug.Log($"Added Random Letter in {grid[i, j]}");
                 }
             }
         }
 
+        // -------------- Choose Random Tiles as Bonus ones ----------------------
+
+
+        int totalBonusTiles = Random.Range(1, Constants.MAX_BONUS_IN_GAME+1);
+
+        while(totalBonusTiles > 0)
+        {
+            grid[Random.Range(0, 4), Random.Range(0, 4)].IsBonus = true;
+            totalBonusTiles--;
+        }
+
+        // -------------- Choose Random Tiles as Blocked ones ----------------------
+
+        int totalBlockedTiles = Random.Range(1, Constants.MAX_BLOCKS_IN_GAME + 1);
+
+        while (totalBlockedTiles > 0)
+        {
+            grid[Random.Range(0, 4), Random.Range(0, 4)].IsBlocked = true;
+            totalBlockedTiles--;
+        }
+
         yield return null;    
     }
 
+    //Gets called when game restarts
+    private void ReinitGrid()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                grid[i, j].ResetTile();
+            }
+        }
+
+        wordsToInsert.Clear();
+        LetterReg.Clear();
+        selectedWords.Clear();
+
+        GetRandomWords();
+
+        StartCoroutine(InitializeWordBoggle());
+    }
 
 
     private bool InitiateWordAddition(ref string str, bool isFirst = false)
@@ -234,11 +282,6 @@ public class GridHandler : MonoBehaviour
                     tile.SetLetter(str.Substring(0, 1));
                     index = 1;
 
-                    if (i == 3 && j == 3)
-                    { 
-                        Debug.Log("Started for true");
-                        
-                    }
 
                     // Continue the letter addition with rest of the words 
                     if (TryAddWord(ref tiles, ref str, ref tile, ref index, true, isFirst))
@@ -246,15 +289,6 @@ public class GridHandler : MonoBehaviour
                         UpdateLetterRegistry(ref tiles);
                         CollectionPool<List<LetterTile>, LetterTile>.Release(tiles);
                         return true;
-                    }
-
-                    if (i == 3 && j == 3)
-                    {
-                        Debug.Log("Output:");
-                        foreach (var t in tiles)
-                        {
-                            Debug.Log(t.GetTileIndex()+ " " + t.GetText());
-                        }
                     }
 
                     // Remove only those letters which were newly added
@@ -390,7 +424,6 @@ public class GridHandler : MonoBehaviour
     }
 
 
-
     #region Helper Methods
 
     readonly Vector2[] checkDirections =
@@ -456,11 +489,29 @@ public class GridHandler : MonoBehaviour
         return (cell.x >= 0 && cell.x < 4) && (cell.y >= 0 && cell.y < 4);
     }
 
+    private List<LetterTile> GetBlockedNeighbours(LetterTile tile)
+    {
+        List<LetterTile> tiles = GetNeighbours(tile.GetTileIndex());
+
+        for (int i = 0; i < tiles.Count; i++)
+        {
+            if (!tiles[i].IsBlocked)
+            {
+                tiles.RemoveAt(i);
+                i--;
+            }
+        }
+
+        return tiles;
+    }
+
     #endregion
 
     private void DeinitListeners()
     {
         EventManager.OnValidateWord.RemoveListener(ValidateSelectedWord);
+        EventManager.OnGameRestart.RemoveListener(ReinitGrid);
+        EventManager.GetBlockedNeighbours.RemoveListener(GetBlockedNeighbours);
     }
 
     private void OnDisable()
