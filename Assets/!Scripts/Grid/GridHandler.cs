@@ -120,11 +120,11 @@ public class GridHandler : MonoBehaviour
         {
             for (int j = 0; j < 4; j++)
             {
-                if (!IsValidTile(grid[i, j]))
+                if (IsValidTile(grid[i, j]))
                 {
-                    string rand_le = (Random.Range((int)'a' , ((int)'z' + 1))).ToString();
+                    string rand_le = ((char)Random.Range((int)'a', ((int)'z' + 1))).ToString();
                     grid[i, j].SetLetter(rand_le);
-                    Debug.Log($"Added Random Letter {rand_le} in {grid[i,j]}");
+                    Debug.Log($"Added Random Letter in {grid[i, j]}");
                 }
             }
         }

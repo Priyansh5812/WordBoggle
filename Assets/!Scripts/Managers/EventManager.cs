@@ -35,7 +35,7 @@ public static class EventManager
         get; private set;
     } = new();
 
-    public static ActionEvent OnValidWordSelected
+    public static ActionEvent<List<LetterTile>> OnValidWordSelected
     {
         get; private set;
     } = new();
@@ -49,6 +49,12 @@ public static class EventManager
     {
         get; private set;
     } = new();
+
+    public static ActionEvent OnGameRestart
+    {
+        get; private set;
+    } = new();
+
 
 
 }

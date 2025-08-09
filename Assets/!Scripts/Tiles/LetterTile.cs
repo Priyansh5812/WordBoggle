@@ -14,9 +14,16 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
 
 
     [Header("Internals")]
-    [SerializeField] int m_score = 0;
-    [SerializeField] bool m_isBonus = false;
-    [SerializeField] bool isBlocked = false;
+    public bool IsBonus
+    {
+        get;
+        set;
+    }
+    public bool IsBlocked
+    {
+        get;
+        set;
+    }
 
     private bool m_isSelected = false;
     public bool IsSelected

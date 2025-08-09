@@ -13,6 +13,7 @@ public class WordsManager : MonoBehaviour
         get;
     } = new();
 
+    public static bool areWordsLoaded = false;
 
     TextAsset wordsTxt;
     static Node rootNode;
@@ -50,6 +51,7 @@ public class WordsManager : MonoBehaviour
 
         string[] words = wordsTxt.text.Split('\n');
         GenerateWordTree(ref words);
+        areWordsLoaded = true;
         OnWordsLoaded?.Invoke();
     }
 

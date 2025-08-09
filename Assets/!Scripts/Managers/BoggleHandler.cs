@@ -47,13 +47,13 @@ public class BoggleHandler : MonoBehaviour
             str += i.GetText();
         }
 
-        tiles.Clear();
+        
         Debug.Log("Word Selected : " + str);
 
         switch (EventManager.OnValidateWord.Invoke(str))
         {
             case WordValidationType.VALID:
-                OnValidWord();
+                OnValidWord(tiles);
                 break;
             case WordValidationType.INVALID:
                 OnInvalidWord();
@@ -65,11 +65,13 @@ public class BoggleHandler : MonoBehaviour
                 Debug.LogError("Unknown validation verdict");
                 break;
         }
+
+        tiles.Clear();
     }
 
-    private void OnValidWord()
+    private void OnValidWord(List<LetterTile> tiles)
     {   
-        EventManager.OnValidWordSelected.Invoke();
+        EventManager.OnValidWordSelected.Invoke(tiles);
     }
 
     private void OnExistingWord()

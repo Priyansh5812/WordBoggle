@@ -9,10 +9,20 @@ public class MenuView : MonoBehaviour
     [SerializeField] private Button btn_start;
     [SerializeField] private GameObject LoadingIndication;
     private void OnEnable()
-    {
-        cg_main.interactable = false;
-        LoadingIndication?.SetActive(false);
+    {   
+        // Wait for callback if words are not loaded
+        if (!WordsManager.areWordsLoaded)
+        {
+            cg_main.interactable = false;
+            
+        }
+        else // If words are already loaded then allow interactions from the start
+        {
+            SetMenuInteractable();
+        }
+
         WordsManager.OnWordsLoaded.AddListener(SetMenuInteractable);
+        LoadingIndication?.SetActive(false);
         btn_start?.onClick.AddListener(SetupLoadingGameScene);
     }
 
