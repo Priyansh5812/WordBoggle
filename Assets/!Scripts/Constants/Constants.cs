@@ -22,6 +22,14 @@ namespace WordBoggle
         public bool isValidWord = false; // Is current Word valid
         public readonly Dictionary<char , Node> children = new(); // reference to children nodes
     }
+
+
+    public enum WordValidationType
+    {
+        VALID,
+        EXISTING,
+        INVALID
+    }
 }
 
 

@@ -1,9 +1,20 @@
 using System;
-using Unity.VisualScripting;
+using System.Collections.Generic;
 using UnityEngine;
+using WordBoggle;
 
 public static class EventManager
-{
+{   
+    public static FuncEvent<string> OnGetRandomWord
+    {
+        get; private set;
+    } = new();
+
+    public static FuncEvent<string , bool> OnSearchWordInTree
+    {
+        get; private set;
+    } = new();
+
     public static ActionEvent<LetterTile> OnSelectionStarted
     {
         get; private set;
@@ -18,6 +29,27 @@ public static class EventManager
     {
         get; private set;
     } = new();
+
+    public static FuncEvent<string , WordValidationType> OnValidateWord
+    {
+        get; private set;
+    } = new();
+
+    public static ActionEvent OnValidWordSelected
+    {
+        get; private set;
+    } = new();
+
+    public static ActionEvent OnExistingWordSelected
+    {
+        get; private set;
+    } = new();
+
+    public static ActionEvent OnInvalidWordSelected
+    {
+        get; private set;
+    } = new();
+
 
 }
 

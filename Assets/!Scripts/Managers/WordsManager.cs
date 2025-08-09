@@ -22,12 +22,20 @@ public class WordsManager : MonoBehaviour
         { 
             m_instance = this;
             DontDestroyOnLoad(this.gameObject);
+            InitListeners();
         }
         else
             Destroy(this.gameObject);
 
         StartCoroutine(LoadWords());
     }
+
+    private void InitListeners()
+    {
+        EventManager.OnSearchWordInTree.AddListener(DoesWordExistsInTree);
+        EventManager.OnGetRandomWord.AddListener(GetRandomWord);
+    }
+
 
     IEnumerator LoadWords()
     {   
@@ -46,11 +54,35 @@ public class WordsManager : MonoBehaviour
     }
 
 
-    public static string GetRandomWord()
+    private static string GetRandomWord()
     {
         return GetRandomWordInternal(ref rootNode);
     }
 
+    private bool DoesWordExistsInTree(string str)
+    {
+        Node node = rootNode;
+
+        for(int i = 0; i < str.Length; i++)
+        {
+            if (node.children.ContainsKey(str[i]))
+            {
+                node = node.children[str[i]];
+
+                if (i == str.Length - 1)
+                {
+                    return node.isValidWord;
+                }
+            }
+            else 
+            {
+                return false;
+            }
+
+        }
+
+        return false;
+    }
 
 
     private void GenerateWordTree(ref string[] words)
@@ -115,6 +147,20 @@ public class WordsManager : MonoBehaviour
         }
 
         return randomChild.le + GetRandomWordInternal(ref randomChild);
+    }
+
+    private void DeinitListeners()
+    {
+        EventManager.OnSearchWordInTree.AddListener(DoesWordExistsInTree);
+        EventManager.OnGetRandomWord.AddListener(GetRandomWord);
+    }
+    private void OnDisable()
+    {
+        DeinitListeners();
+        if (m_instance == this)
+        {
+            m_instance = null;
+        }
     }
 
 }

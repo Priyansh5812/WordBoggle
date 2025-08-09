@@ -9,11 +9,23 @@ public class GridHandler : MonoBehaviour
     readonly LetterTile[,] grid = new LetterTile[4,4];
     readonly List<string> wordsToInsert = new();
     readonly Dictionary<char, List<Vector2>> LetterReg = new();
+    readonly List<string> selectedWords = new();
+
+    private void OnEnable()
+    {
+        InitListeners();
+    }
+
     private void Start()
     {
         InitializeGrid();
         GetRandomWords();
         StartCoroutine(InitializeWordBoggle());
+    }
+
+    private void InitListeners()
+    {
+        EventManager.OnValidateWord.AddListener(ValidateSelectedWord);
     }
 
     private void InitializeGrid()
@@ -45,11 +57,10 @@ public class GridHandler : MonoBehaviour
 
     private void GetRandomWords()
     {
-        
         Debug.Log("Words to Insert : ");
         for (int i = 0; i < Constants.MAX_WORDS_IN_GRID; i++)
         {
-            string str = WordsManager.GetRandomWord();
+            string str = EventManager.OnGetRandomWord.Invoke();
             if (wordsToInsert.Contains(str))
             {
                 i--;
@@ -57,14 +68,40 @@ public class GridHandler : MonoBehaviour
             }
             wordsToInsert.Add(str);
         }
-
-        
     }
+
+    private WordValidationType ValidateSelectedWord(string str)
+    {
+        // Checking whether it exists in selected words list...
+        if (selectedWords.Contains(str))
+        {
+            Debug.Log("Word already selected");
+            return WordValidationType.EXISTING;
+        }
+
+        // Checking whether it exists in existing word List...
+        if (wordsToInsert.Contains(str))
+        {
+            Debug.Log("New word selected");
+            selectedWords.Add(str);
+            return WordValidationType.VALID;
+        }
+
+        // Checking whether word exists in Tree
+        if(EventManager.OnSearchWordInTree.Invoke(str))
+        {
+            Debug.Log("New word selected from Tree");
+            selectedWords.Add(str);
+            return WordValidationType.VALID;
+        }
+
+        return WordValidationType.INVALID;
+    }
+
 
     IEnumerator InitializeWordBoggle()
     {
-        //string str = wordsToInsert[0];
-        //AddWordInGrid(ref str , true);
+
         string str;
         for (int i = 0; i < wordsToInsert.Count; i++)
         {
@@ -78,6 +115,19 @@ public class GridHandler : MonoBehaviour
         }
 
         //----- Finalize for the remaining Valid tiles (if any) with the Random Letters --------
+
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                if (!IsValidTile(grid[i, j]))
+                {
+                    string rand_le = (Random.Range((int)'a' , ((int)'z' + 1))).ToString();
+                    grid[i, j].SetLetter(rand_le);
+                    Debug.Log($"Added Random Letter {rand_le} in {grid[i,j]}");
+                }
+            }
+        }
 
         yield return null;    
     }
@@ -232,9 +282,6 @@ public class GridHandler : MonoBehaviour
                 }
             }
         }
-
-
-
         // If addition of every tile was unsuccessful, then release that memory
         CollectionPool<List<LetterTile>, LetterTile>.Release(tiles);
 
@@ -411,6 +458,14 @@ public class GridHandler : MonoBehaviour
 
     #endregion
 
+    private void DeinitListeners()
+    {
+        EventManager.OnValidateWord.RemoveListener(ValidateSelectedWord);
+    }
 
+    private void OnDisable()
+    {
+        DeinitListeners();
+    }
 
 }
