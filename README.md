@@ -186,6 +186,12 @@ I am storing the predefined data in two places:
 For the data like which gets used in the core of the game, is being stored in ```Constants.cs``` <br>
 For the data whose values can be customized eg Scoring and etc are being stored in a ```Scriptable Object``` called ```GameConfig```.
 
+## Optimizations Considered
+1. Collection Pooling
+2. Keep param passing in tight loops as "pass-by-reference"
+3. Event-driven communication
+4. Avoided Update Functions as much as possible.
+
 ## Corner Cases tackled 
 
 1. While Adding the words in the grid, it is possible to repeat on same tiles for word addition resulting in incomplete / word addition 
