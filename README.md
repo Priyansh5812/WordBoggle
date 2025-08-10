@@ -18,6 +18,7 @@ The structure of a Tree node has a following format:
         public readonly Dictionary<char , Node> children = new(); // reference to children nodes
     }
 ```
+<img width="863" height="666" alt="Screenshot 2025-08-10 161902" src="https://github.com/user-attachments/assets/58816b4e-20fd-4256-9081-14d94c6d119c" />
 
 I have also added a callback for the "OnWordsLoaded" upon which we can make the interactions enabled or disable an ongoing loading screen. Though it is currently being used for enabling interactions only.
 
@@ -120,7 +121,7 @@ Here the functionality is being divided based on the kind of work required to be
 ```StatsView.cs``` is responsible to reflect that data on UI.
 
 ## Word Validation
-The word selection and determining logic is initiated by ```BoggleHandler``` class.
+The word validation is done by ```GridHandler``` class due, however the logic initiates executiing by ```BoggleHandler``` class.
 For registering and keeping track of the words made I am using ```IPointerHandler``` interfaces which are providing callbacks based on the tap and drag. 
 In order to check a word determining it via an Enum ```WordValidationType``` and invoking the corrosponding event based on the verdict.
 
@@ -142,6 +143,42 @@ switch (EventManager.OnValidateWord.Invoke(str))
 }
 ```
 
+## Letter Tile
+
+In order to modify the data and visual of a Letter tile in one call, I decided to wrap the calls of the data change in the properties itself, providing me relief from adding another event in EventManager class or any explicit calls
+
+```c#
+    private bool m_IsBonus = false;
+    private bool m_IsBlocked = false;
+    public bool IsBonus
+    {
+        get => m_IsBonus;
+        set
+        {
+            SetAsBonusTile(value);
+        }
+    }
+    public bool IsBlocked
+    {
+        get => m_IsBlocked;
+        set
+        { 
+            SetAsBlockedTile(value);
+        }
+    }
+
+    private bool m_isSelected = false;
+    public bool IsSelected
+    {
+        get => m_isSelected;
+        set
+        {   
+            m_isSelected = value;
+            OnSelected(value);
+        }
+    }
+```
+
 ## Pre-Defined Data
 
 I am storing the predefined data in two places: 
@@ -149,6 +186,22 @@ I am storing the predefined data in two places:
 For the data like which gets used in the core of the game, is being stored in ```Constants.cs``` <br>
 For the data whose values can be customized eg Scoring and etc are being stored in a ```Scriptable Object``` called ```GameConfig```.
 
+## Corner Cases tackled 
 
+1. While Adding the words in the grid, it is possible to repeat on same tiles for word addition resulting in incomplete / word addition 
 
+```c#        
+    // Get the neighbours
+    neighbours = GetNeighbours(startTile.GetTileIndex());
+
+    // CORNER CASE : words like "fgf" can redirect again to one of the accquired tiles in the past calls. Therefore removing them from the list of neighbours
+    foreach (var lastTiles in tiles)
+    {
+        neighbours.Remove(lastTiles);
+    }
+```
+
+2. User can exploit the grid by dragging the finger out of the grid and pointing it to a farther cell. In order to fix this I added a boundary checks in the borders, which triggers the "End Word Selection".
+
+<img width="788" height="842" alt="Screenshot 2025-08-10 161832" src="https://github.com/user-attachments/assets/5dc13852-3773-4703-9f35-6e6c36008080" />
 
