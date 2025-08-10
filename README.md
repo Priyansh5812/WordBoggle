@@ -1,7 +1,7 @@
 # Word Boggle Assignment Overview
 
 ## Word Hashing
-Word Hashing is done and managed by ``` WordsManager``` class and remain persistant and non-singleton across the game scenes.
+Word Hashing is done and managed by ```WordsManager``` class and remain persistant and non-singleton across the game scenes.
 Its accessibility is done by an ```EventManager``` class (More on it in future)
 
 Since we have 55681 words to work with, I decided to go with a Tree. This is because of the following reasons:
