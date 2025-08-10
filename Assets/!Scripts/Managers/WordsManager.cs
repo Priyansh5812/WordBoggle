@@ -57,8 +57,10 @@ public class WordsManager : MonoBehaviour
 
 
     private static string GetRandomWord()
-    {
-        return GetRandomWordInternal(ref rootNode);
+    {   
+        string str = GetRandomWordInternal(ref rootNode); ;
+        Debug.Log("Got Word " + str);
+        return str;
     }
 
     private bool DoesWordExistsInTree(string str)
@@ -148,7 +150,7 @@ public class WordsManager : MonoBehaviour
             i--;
         }
 
-        return randomChild.le + GetRandomWordInternal(ref randomChild);
+        return (randomChild != null ? (randomChild.le + GetRandomWordInternal(ref randomChild)) : (string.Empty));
     }
 
     private void DeinitListeners()

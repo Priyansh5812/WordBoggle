@@ -25,7 +25,6 @@ namespace WordBoggle
         }
 
         public char le; // letter
-        public int subTreeWordCount = 1; // Total Possible words inside the subtree from current node
         public bool isValidWord = false; // Is current Word valid
         public readonly Dictionary<char , Node> children = new(); // reference to children nodes
     }

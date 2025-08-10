@@ -85,22 +85,6 @@ public class ActionEvent
     public void AddListener(Action action) => baseAction += action;
 
     public void RemoveListener(Action action) => baseAction -= action;
-
-    public bool IsListenerExist(Action action)
-    {
-        Delegate[] delegates = baseAction.GetInvocationList();
-
-        foreach (var i in delegates)
-        {
-            if (i.Equals(action))
-            {
-                return true;
-            }
-
-        }
-
-        return false;
-    }
 }
 public class ActionEvent<T1>
 {
@@ -112,21 +96,7 @@ public class ActionEvent<T1>
 
     public void RemoveListener(Action<T1> action) => baseAction -= action;
 
-    public bool IsListenerExist(Action<T1> action)
-    {
-        Delegate[] delegates = baseAction.GetInvocationList();
 
-        foreach (var i in delegates)
-        {
-            if (i.Equals(action))
-            {
-                return true;
-            }
-
-        }
-
-        return false;
-    }
 }
 public class ActionEvent<T1, T2>
 {
@@ -137,21 +107,6 @@ public class ActionEvent<T1, T2>
 
     public void RemoveListener(Action<T1, T2> action) => baseAction -= action;
 
-    public bool IsListenerExist(Action<T1, T2> action)
-    {
-        Delegate[] delegates = baseAction.GetInvocationList();
-
-        foreach (var i in delegates)
-        {
-            if (i.Equals(action))
-            {
-                return true;
-            }
-
-        }
-
-        return false;
-    }
 
 
 }
@@ -166,21 +121,6 @@ public class FuncEvent<T1>
 
     public void RemoveListener(Func<T1> action) => baseFunc -= action;
 
-    public bool IsListenerExist(Func<T1> action)
-    {
-        Delegate[] delegates = baseFunc.GetInvocationList();
-
-        foreach (var i in delegates)
-        {
-            if (i.Equals(action))
-            {
-                return true;
-            }
-
-        }
-
-        return false;
-    }
 }
 
 public class FuncEvent<T1 , T2>
@@ -193,21 +133,6 @@ public class FuncEvent<T1 , T2>
 
     public void RemoveListener(Func<T1 , T2> action) => baseFunc -= action;
 
-    public bool IsListenerExist(Func<T1 , T2> action)
-    {
-        Delegate[] delegates = baseFunc.GetInvocationList();
-
-        foreach (var i in delegates)
-        {
-            if (i.Equals(action))
-            {
-                return true;
-            }
-
-        }
-
-        return false;
-    }
 }
 
 public class FuncEvent<T1, T2, T3>
@@ -220,21 +145,6 @@ public class FuncEvent<T1, T2, T3>
 
     public void RemoveListener(Func<T1, T2, T3> action) => baseFunc -= action;
 
-    public bool IsListenerExist(Func<T1, T2, T3> action)
-    {
-        Delegate[] delegates = baseFunc.GetInvocationList();
-
-        foreach (var i in delegates)
-        {
-            if (i.Equals(action))
-            {
-                return true;
-            }
-
-        }
-
-        return false;
-    }
 }
 
 
