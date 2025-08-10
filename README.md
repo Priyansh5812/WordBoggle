@@ -8,7 +8,7 @@ Since we have 55681 words to work with, I decided to go with a Tree. This is bec
 1. Searching a word in a Tree has less complexity ```O(word.length)``` rather than ```O(totalWords)``` in an Array/List.
 2. Trees are highly versatile when it comes to their customization. (For Example : Adding a new word will reuse the existing nodes)
 
-The structure of a Tree has a following format:
+The structure of a Tree node has a following format:
 
 ```c#
     public class Node
