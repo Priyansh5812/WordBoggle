@@ -1,19 +1,20 @@
-using UnityEngine;
-using TMPro;
-using UnityEngine.UI;
-using System.Collections.Generic;
-using UnityEngine.EventSystems;
 using System;
+using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using WordBoggle;
 
 public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler
 {
-    [SerializeField] TextMeshProUGUI m_text;
-    [SerializeField] Image BonusImage;
-    [SerializeField] Image BlockImage;
+    [SerializeField] TextMeshProUGUI m_Text;
+    [SerializeField] Image m_MainImage;
+    [SerializeField] Image m_BonusImage;
+    [SerializeField] Image m_BlockImage;
 
     [Header("Grid-Related")]
-    [SerializeField] Vector2 m_index;
-
+    [SerializeField] Vector2 m_Index;
+    [SerializeField, Range(0f, 1f)] float m_SelectedTileScale;
 
     [Header("Internals")]
     private bool m_IsBonus = false;
@@ -42,33 +43,48 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
         set
         {   
             m_isSelected = value;
+            OnSelected(value);
         }
     }
 
     public static bool IsSelectionStarted = false;
     public void SetGridIndex(in Vector2 GridIndex)
     { 
-        m_index = GridIndex;
+        m_Index = GridIndex;
     }
 
     public void SetLetter(string le)
     {   
-        m_text?.SetText(le);
+        m_Text?.SetText(le);
     }
 
-    public string GetText() => m_text.text;
-    public Vector2 GetTileIndex() => m_index;
+
+    private void OnSelected(bool value)
+    {
+        string hex = value ? Constants.SELECTED_TILE_COLOR : Constants.UNSELECTED_TILE_COLOR;
+        Color color = Color.white;
+        ColorUtility.TryParseHtmlString(hex, out color);
+        m_MainImage.color = color;
+
+        //------------------------------
+
+        m_MainImage.rectTransform.localScale = Vector3.one * (value ? m_SelectedTileScale : 1.0f);
+    }
+
+
+    public string GetText() => m_Text.text;
+    public Vector2 GetTileIndex() => m_Index;
 
     private void SetAsBonusTile(bool value)
     {
         m_IsBonus = value;
-        BonusImage.gameObject.SetActive(value);
+        m_BonusImage.gameObject.SetActive(value);
     }
 
     private void SetAsBlockedTile(bool value)
     {
         m_IsBlocked = value;
-        BlockImage.gameObject.SetActive(value);
+        m_BlockImage.gameObject.SetActive(value);
     }
 
     public void OnPointerEnter(PointerEventData eventData)

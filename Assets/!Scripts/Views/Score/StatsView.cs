@@ -1,8 +1,12 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using WordBoggle;
+using System.Threading.Tasks;
+using System.Collections;
+
 public class StatsView : MonoBehaviour
 {
     [Header("Stats-Related")]
@@ -11,15 +15,16 @@ public class StatsView : MonoBehaviour
     [SerializeField] TextMeshProUGUI m_ScoreText_GM;
     [SerializeField] TextMeshProUGUI m_BonusText_GM;
     [SerializeField] TextMeshProUGUI m_TotalWordsText_GM;
+    [SerializeField] TextMeshProUGUI m_WordStatus;
 
     [Header("Canvas Group")]
     [SerializeField] CanvasGroup cg_Pause;
     [SerializeField] CanvasGroup cg_GameOver;
-    [SerializeField] Image m_gridGuard;
 
     [Header("Past-Words Related")]
     [SerializeField] TextMeshProUGUI m_WordPrefab;
     [SerializeField] RectTransform m_ExistingWordParent;
+    [SerializeField] float WordStatusDisplayDuration;
 
     [Header("Buttons")]
     [SerializeField] Button btn_Pause;
@@ -30,9 +35,11 @@ public class StatsView : MonoBehaviour
 
     [Header("Config")]
     [SerializeField] GameConfig m_gameConfig;
+
     //Others
     StatsController m_Controller = null;
-
+    Coroutine m_Routine = null;
+    WaitForSeconds wordStatusDelay;
 
     void OnEnable()
     {
@@ -43,6 +50,7 @@ public class StatsView : MonoBehaviour
     private void Start()
     {
         StartCoroutine(m_Controller.TimerRoutine());
+        wordStatusDelay = new(WordStatusDisplayDuration);
     }
 
 
@@ -50,6 +58,10 @@ public class StatsView : MonoBehaviour
     {
         EventManager.OnValidWordSelected.AddListener(m_Controller.ProcessValidWord);
         EventManager.IsGameOver.AddListener(m_Controller.GetIsGameOver);
+        EventManager.OnValidWordSelected.AddListener(UpdateValidWordStatus);
+        EventManager.OnExistingWordSelected.AddListener(UpdateExistingWordStatus);
+        EventManager.OnInvalidWordSelected.AddListener(UpdateInvalidWordStatus);
+
         btn_Pause.onClick.AddListener(TriggerGamePause);
         btn_Resume.onClick.AddListener(ResumeGame);
         btn_Quit.onClick.AddListener(QuitGame);
@@ -136,17 +148,80 @@ public class StatsView : MonoBehaviour
         //-----------------------------------------------
         EventManager.OnGameRestart.Invoke();
     }
+
+    private void UpdateValidWordStatus(List<LetterTile> tiles)
+    {
+        if (m_Routine != null)
+            StopCoroutine(m_Routine);
+
+        m_Routine = StartCoroutine(UpdateWordStatusForValid());
+    }
+
+    private void UpdateExistingWordStatus()
+    {
+        if (m_Routine != null)
+            StopCoroutine(m_Routine);
+
+        m_Routine = StartCoroutine(UpdateWordStatusForExisting());
+    }
+
+    private void UpdateInvalidWordStatus()
+    {
+        if (m_Routine != null)
+            StopCoroutine(m_Routine);
+
+        m_Routine = StartCoroutine(UpdateWordStatusForInvalid());
+    }
+
+
+
+    IEnumerator UpdateWordStatusForValid()
+    {
+        m_WordStatus?.SetText("New Word Found !");
+        Color color = Color.white;
+        ColorUtility.TryParseHtmlString(Constants.VALID_COLOR, out color);
+        m_WordStatus.color = color;
+        yield return wordStatusDelay;
+        m_WordStatus.color = Color.clear;
+        m_Routine = null;
+    }
+    IEnumerator UpdateWordStatusForExisting()
+    {
+        m_WordStatus?.SetText("Word already exists");
+        Color color = Color.white;
+        ColorUtility.TryParseHtmlString(Constants.EXISTING_COLOR, out color);
+        m_WordStatus.color = color;
+        yield return wordStatusDelay;
+        m_WordStatus.color = Color.clear;
+        m_Routine = null;
+    }
+    IEnumerator UpdateWordStatusForInvalid()
+    {
+        m_WordStatus?.SetText("Word does not exists");
+        Color color = Color.white;
+        ColorUtility.TryParseHtmlString(Constants.INVALID_COLOR, out color);
+        m_WordStatus.color = color;
+        yield return wordStatusDelay;
+        m_WordStatus.color = Color.clear;
+        m_Routine = null;
+    }
+
     #endregion
 
     private void DeinitListeners()
     {
         EventManager.OnValidWordSelected.RemoveListener(m_Controller.ProcessValidWord);
         EventManager.IsGameOver.RemoveListener(m_Controller.GetIsGameOver);
+        EventManager.OnValidWordSelected.RemoveListener(UpdateValidWordStatus);
+        EventManager.OnExistingWordSelected.RemoveListener(UpdateExistingWordStatus);
+        EventManager.OnInvalidWordSelected.RemoveListener(UpdateInvalidWordStatus);
+
         btn_Pause.onClick.RemoveListener(TriggerGamePause);
         btn_Resume.onClick.RemoveListener(ResumeGame);
         btn_Quit.onClick.RemoveListener(QuitGame);
         btn_Restart.onClick.RemoveListener(RestartGame);
         btn_Quit_GM.onClick.RemoveListener(QuitGame);
+        
     }
 
     private void OnDisable()
