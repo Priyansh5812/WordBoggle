@@ -32,6 +32,122 @@ I wanted to create this game such that there are no singletons and every class w
 
 This type of architecture follows <b>Observer Design Pattern</b> which I use in almost every project.
 
+## Grid Handling
+
+The grid handling is done ```GridHandler``` class and uses ```WordsManager``` class and is core of the game.
+
+Here I am inserting the words in such a way that a new word can also use the letters of past words embedded. Also it can detect whether a similar is already being made or not.
+For example : Word "Clear" also contains word "ear"
+
+
+For fast retrivals I have maintained a Letter-Registry ```LetterReg``` which is used to retrive the grid indices with existing letters in it. For Example : I don't have to iterate over the grid just to find a tile containing the required letter to be reused.
+
+One of the most crucial and best thing about this script is that... it is using "Collection Pooling". For Example, consider the following function : 
+```c#
+    private bool InitiateWordAddition(ref string str, bool isFirst = false)
+    {
+       // bool res = false;
+        List<LetterTile> tiles = CollectionPool<List<LetterTile>, LetterTile>.Get();
+        LetterTile tile = null;
+        int index = 1;
+
+        //Try Getting the tiles from every similar existing letter
+        if (LetterReg.ContainsKey(str[0]))
+        {
+            foreach (var i in LetterReg[str[0]])
+            {
+                Debug.Log(i);
+                tile = grid[(int)i.x, (int)i.y];
+                tiles.Add(tile);
+                index = 1;
+                if (TryAddWord(ref tiles, ref str, ref tile, ref index, true))
+                {
+                    UpdateLetterRegistry(ref tiles);
+                    CollectionPool<List<LetterTile>, LetterTile>.Release(tiles);
+                    Debug.Log($"Word {str} added with existing scan");
+                    return true;
+                }
+
+                foreach (var t in tiles)
+                {
+                    if (i == t.GetTileIndex())
+                    {
+                        continue;
+                    }
+                    t.SetLetter(string.Empty);
+                }
+
+                tiles.Clear();
+            }
+
+        }
+
+        // FALLBACK : Try additing the word from every valid tile
+        return TryAddWordWithEveryValidTile(ref str, ref tiles, isFirst);
+    }
+```
+
+This function is responsible for the addition of a word in the grid.
+
+```c#
+List<LetterTile> tiles = CollectionPool<List<LetterTile>, LetterTile>.Get();
+```
+provides me a reference to the List<LetterTile> which was created in past and now cleared and ready to be reused.
+If there wasn't any such collection created in past, then Unity will create anew and provide it.
+
+Once done with our work we can release that resource, so that it can be reused in the future: 
+
+```c#
+if (TryAddWord(ref tiles, ref str, ref tile, ref index, true))
+{
+    UpdateLetterRegistry(ref tiles);
+    CollectionPool<List<LetterTile>, LetterTile>.Release(tiles);
+    Debug.Log($"Word {str} added with existing scan");
+    return true;
+}
+```
+### Searching a word
+
+In gameplay if word does not exist inside a list of embedded words, then it will fallback to searching that word in the Tree itself in ```WordsManager```
+if the required word gets found in any of the searching, then it will add that word into a list of existing words in order to avoid the any kind of exploitation.
+
+
+## Game Stats
+In order to manage the game stats, I have created a mini architecture inspired from Model-View-Controller. Though it is not completing that.
+Here the functionality is being divided based on the kind of work required to be done.
+
+```StatsController.cs``` is responsible for the logic and behaviour of the stats.<br>
+```StatsView.cs``` is responsible to reflect that data on UI.
+
+## Word Validation
+The word selection and determining logic is initiated by ```BoggleHandler``` class.
+For registering and keeping track of the words made I am using ```IPointerHandler``` interfaces which are providing callbacks based on the tap and drag. 
+In order to check a word determining it via an Enum ```WordValidationType``` and invoking the corrosponding event based on the verdict.
+
+```c#
+switch (EventManager.OnValidateWord.Invoke(str))
+{
+    case WordValidationType.VALID:
+        OnValidWord(tiles);
+        break;
+    case WordValidationType.INVALID:
+        OnInvalidWord();
+        break;
+    case WordValidationType.EXISTING:
+        OnExistingWord();
+        break;
+    default:
+        Debug.LogError("Unknown validation verdict");
+        break;
+}
+```
+
+## Pre-Defined Data
+
+I am storing the predefined data in two places: 
+
+For the data like which gets used in the core of the game, is being stored in ```Constants.cs``` <br>
+For the data whose values can be customized eg Scoring and etc are being stored in a ```Scriptable Object``` called ```GameConfig```.
 
 
 
