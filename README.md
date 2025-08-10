@@ -29,7 +29,7 @@ For example : 50% Prob of getting a 6 letter word, Therefore we can use algorith
 
 ## Event-Management
 
-I wanted to create this game such that there are no singletons and every class will be responsible for itself only. Therefore I have created a static class which will be containing all the statically defined public events and can be access throughout the game. Upon triggering a specific situation rather than storing references to all the classes require to act on, I am just invoking a specific Action / Func which will provide me the logic execution without any extra reference management. 
+I wanted to create this game such that there are no singletons and every class will be responsible for itself only. Therefore I have created a static class ```EventManager``` which will be containing all the statically defined public events and can be access throughout the game. Upon triggering a specific situation rather than storing references to all the classes require to act on, I am just invoking a specific Action / Func which will provide me the logic execution without any extra reference management. 
 
 This type of architecture follows <b>Observer Design Pattern</b> which I use in almost every project.
 
