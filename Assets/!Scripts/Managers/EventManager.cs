@@ -65,6 +65,15 @@ public static class EventManager
         get; private set;
     } = new();
 
+    public static FuncEvent<LetterTile, LetterTile, bool> AreNeighbours
+    {
+        get; private set;
+    } = new();
+    public static FuncEvent<(int,int) , LetterTile> GetTileFromGrid
+    {
+        get; private set;
+    } = new();
+
 }
 
 public class ActionEvent
@@ -185,6 +194,33 @@ public class FuncEvent<T1 , T2>
     public void RemoveListener(Func<T1 , T2> action) => baseFunc -= action;
 
     public bool IsListenerExist(Func<T1 , T2> action)
+    {
+        Delegate[] delegates = baseFunc.GetInvocationList();
+
+        foreach (var i in delegates)
+        {
+            if (i.Equals(action))
+            {
+                return true;
+            }
+
+        }
+
+        return false;
+    }
+}
+
+public class FuncEvent<T1, T2, T3>
+{
+    private event Func<T1, T2, T3> baseFunc;
+
+    public T3 Invoke(T1 value_1, T2 value_2) => baseFunc.Invoke(value_1, value_2);
+
+    public void AddListener(Func<T1, T2, T3> action) => baseFunc += action;
+
+    public void RemoveListener(Func<T1, T2, T3> action) => baseFunc -= action;
+
+    public bool IsListenerExist(Func<T1, T2, T3> action)
     {
         Delegate[] delegates = baseFunc.GetInvocationList();
 

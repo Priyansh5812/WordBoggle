@@ -28,6 +28,8 @@ public class GridHandler : MonoBehaviour
         EventManager.OnValidateWord.AddListener(ValidateSelectedWord);
         EventManager.OnGameRestart.AddListener(ReinitGrid);
         EventManager.GetBlockedNeighbours.AddListener(GetBlockedNeighbours);
+        EventManager.AreNeighbours.AddListener(AreNeighbours);
+        EventManager.GetTileFromGrid.AddListener(GetTileFromGrid);
     }
 
     private void InitializeGrid()
@@ -478,15 +480,40 @@ public class GridHandler : MonoBehaviour
     }
 
 
-    private bool IsValidTile(LetterTile tile)
+    private bool IsValidTile(in LetterTile tile)
     {
         return string.IsNullOrEmpty(tile.GetText());
+    }
+
+    private LetterTile GetTileFromGrid((int ,int) coords)
+    {
+        Vector2 vec = Vector2.zero;
+        vec.x = coords.Item1;
+        vec.y = coords.Item2;
+        
+        if (!IsValidCell(ref vec))
+            return null;
+
+        return grid[coords.Item1, coords.Item2];
     }
 
 
     private bool IsValidCell(ref Vector2 cell)
     {   
         return (cell.x >= 0 && cell.x < 4) && (cell.y >= 0 && cell.y < 4);
+    }
+
+    private bool AreNeighbours(LetterTile tile_1, LetterTile tile_2)
+    {
+
+        List<LetterTile> tiles = GetNeighbours(tile_1.GetTileIndex());
+
+        bool res = tiles.Contains(tile_2);
+
+        CollectionPool<List<LetterTile>, LetterTile>.Release(tiles);
+
+        return res;
+
     }
 
     private List<LetterTile> GetBlockedNeighbours(LetterTile tile)
@@ -505,6 +532,8 @@ public class GridHandler : MonoBehaviour
         return tiles;
     }
 
+
+
     #endregion
 
     private void DeinitListeners()
@@ -512,6 +541,8 @@ public class GridHandler : MonoBehaviour
         EventManager.OnValidateWord.RemoveListener(ValidateSelectedWord);
         EventManager.OnGameRestart.RemoveListener(ReinitGrid);
         EventManager.GetBlockedNeighbours.RemoveListener(GetBlockedNeighbours);
+        EventManager.AreNeighbours.RemoveListener(AreNeighbours);
+        EventManager.GetTileFromGrid.RemoveListener(GetTileFromGrid);
     }
 
     private void OnDisable()

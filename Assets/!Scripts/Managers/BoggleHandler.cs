@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 using UnityEngine.Pool;
 using WordBoggle;
 public class BoggleHandler : MonoBehaviour
@@ -31,19 +32,22 @@ public class BoggleHandler : MonoBehaviour
     private void OnSelectLogic(LetterTile tile)
     {
         Debug.Log(tile.gameObject.name);
+
+
         tiles.Add(tile);
     }
 
     private void OnEndSelectionLogic()
     {   
-
-        Debug.Log("Ended");
         LetterTile.IsSelectionStarted = false;
 
         // If game is over then refrain from proceeding further
         if (EventManager.IsGameOver.Invoke()) 
             return;
 
+        // If no tiles were selected, then refrain from proceeding further
+        if (tiles == null || tiles.Count == 0)
+            return;
 
         string str = string.Empty;
 
@@ -63,8 +67,6 @@ public class BoggleHandler : MonoBehaviour
                 return;
             }
         }
-
-
 
         Debug.Log("Word Selected : " + str);
 
