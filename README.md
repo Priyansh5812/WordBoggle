@@ -194,7 +194,7 @@ For the data whose values can be customized eg Scoring and etc are being stored 
 
 ## Corner Cases tackled 
 
-1. While Adding the words in the grid, it is possible to repeat on same tiles for word addition resulting in incomplete / word addition 
+1. While Adding the words in the grid, it is possible to repeat on same tiles for word addition resulting in incomplete / wrong word addition 
 
 ```c#        
     // Get the neighbours
