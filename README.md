@@ -1,4 +1,4 @@
-# Word Boggle Assignment Overview
+# Word Boggle Overview
 
 ## Word Hashing
 Word Hashing is done and managed by ```WordsManager``` class and remain persistant and non-singleton across the game scenes.
