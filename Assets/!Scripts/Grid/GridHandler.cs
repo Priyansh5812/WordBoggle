@@ -1,24 +1,33 @@
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.UI;
 using WordBoggle;
 
 public class GridHandler : MonoBehaviour
 {
+    [SerializeField] Image menuImage;
+    [SerializeField] ColorConfig colorConfig;
+
     readonly LetterTile[,] grid = new LetterTile[4,4];
     readonly List<string> wordsToInsert = new();
     readonly Dictionary<char, List<Vector2>> LetterReg = new();
     readonly List<string> selectedWords = new();
+    bool isChangingTheme = false;
 
     private void OnEnable()
     {
         InitListeners();
     }
 
-    private void Start()
+    private async void Start()
     {
+        menuImage.material = new Material(menuImage.material); // Making a copy of the material
         InitializeGrid();
+        await AnimateGridAppearance();
         GetRandomWords();
         StartCoroutine(InitializeWordBoggle());
     }
@@ -30,7 +39,43 @@ public class GridHandler : MonoBehaviour
         EventManager.GetBlockedNeighbours.AddListener(GetBlockedNeighbours);
         EventManager.AreNeighbours.AddListener(AreNeighbours);
         EventManager.GetTileFromGrid.AddListener(GetTileFromGrid);
+        EventManager.OnValidWordSelected.AddListener(OnChangeThemeColor);
     }
+
+    private async UniTask AnimateGridAppearance()
+    {
+        Dictionary<int, List<Transform>> orderedTiles = CollectionPool<Dictionary<int, List<Transform>>, KeyValuePair<int, List<Transform>>>.Get();
+
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                if (!orderedTiles.ContainsKey(i + j))
+                    orderedTiles.Add(i + j, new());
+                orderedTiles[i + j].Add(grid[i, j].transform);
+                grid[i, j].transform.localScale = Vector3.zero;
+            }
+        }
+
+
+        float delay = 0f;
+        foreach (var i in orderedTiles)
+        {
+            foreach (var j in i.Value)
+            {
+                j.DOScale(Vector3.one * 1.25f, 0.425f).SetEase(Ease.OutQuad).SetId(this)
+                    .SetDelay(delay).OnComplete(()=> j.DOScale(Vector3.one , 0.425f).SetEase(Ease.OutQuad));
+            }
+            delay += 0.12f;
+        }
+
+        CollectionPool<Dictionary<int, List<Transform>>, KeyValuePair<int, List<Transform>>>.Release(orderedTiles);
+
+        await UniTask.WaitUntil(() => !DOTween.IsTweening(this));
+    }
+
+
+
 
     private void InitializeGrid()
     {
@@ -43,7 +88,7 @@ public class GridHandler : MonoBehaviour
         }
 
         int k = 0;
-
+        Color color = colorConfig.GetComplementary(menuImage.material.GetColor("_ColorB"));
         for (int i = 0; i < 4; i++)
         {
             for (int j = 0; j < 4; j++)
@@ -53,8 +98,11 @@ public class GridHandler : MonoBehaviour
                 index.y = j;
                 grid[i, j] = tiles[k++];
                 grid[i, j]?.SetGridIndex(in index);
+                grid[i, j]?.OnMainColorUpdated(color, 0);
             }
         }
+
+        
 
         Debug.Log("Grid Initialization Success");
     }
@@ -425,6 +473,40 @@ public class GridHandler : MonoBehaviour
         
     }
 
+    private void OnChangeThemeColor(List<LetterTile> tiles)
+    {
+        if (isChangingTheme)
+            return;
+
+        isChangingTheme = true;
+
+        Color currColor = menuImage.material.GetColor("_ColorB");
+        Color newColor = colorConfig.GetRandomColor();
+        while (newColor == currColor)
+        { 
+            newColor = colorConfig.GetRandomColor();
+        }
+
+        DOTween.To(() => currColor, (Color value) => currColor = value, newColor , 2f).SetEase(Ease.InOutQuad).OnUpdate(() =>
+        {
+            menuImage.material.SetColor("_ColorB", currColor);
+        }).OnComplete(() =>
+        {
+            isChangingTheme = false;
+        });
+
+        Color comp = Util.GetComplementary(newColor);
+
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                grid[i, j]?.OnMainColorUpdated(comp, 2f);
+            }
+        }
+        
+    }
+
 
     #region Helper Methods
 
@@ -543,6 +625,7 @@ public class GridHandler : MonoBehaviour
         EventManager.GetBlockedNeighbours.RemoveListener(GetBlockedNeighbours);
         EventManager.AreNeighbours.RemoveListener(AreNeighbours);
         EventManager.GetTileFromGrid.RemoveListener(GetTileFromGrid);
+        EventManager.OnValidWordSelected.RemoveListener(OnChangeThemeColor);
     }
 
     private void OnDisable()

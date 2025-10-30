@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using WordBoggle;
+using DG.Tweening;
+using System.Collections;
 
 public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler
 {
@@ -48,6 +50,10 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
     }
 
     public static bool IsSelectionStarted = false;
+
+    private Color mainColor;
+    
+
     public void SetGridIndex(in Vector2 GridIndex)
     { 
         m_Index = GridIndex;
@@ -61,14 +67,14 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
 
     private void OnSelected(bool value)
     {
-        string hex = value ? Constants.SELECTED_TILE_COLOR : Constants.UNSELECTED_TILE_COLOR;
-        Color color = Color.white;
-        ColorUtility.TryParseHtmlString(hex, out color);
-        m_MainImage.color = color;
+        
+        if (DOTween.IsTweening(m_MainImage))
+        {
+            DOTween.Kill(m_MainImage);
+        }
 
-        //------------------------------
-
-        m_MainImage.rectTransform.localScale = Vector3.one * (value ? m_SelectedTileScale : 1.0f);
+        m_MainImage.rectTransform.DOScale(Vector3.one * (value ? m_SelectedTileScale : 1.0f), 0.25f).SetEase(Ease.OutQuad).SetId(m_MainImage);
+        m_MainImage.color = value ? Color.white : mainColor;
     }
 
 
@@ -109,6 +115,31 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
     public void OnPointerUp(PointerEventData eventData)
     {
         EventManager.OnSelectionEnded.Invoke();
+    }
+
+    public void OnMainColorUpdated(Color newColor , float transitionDelay)
+    {
+        mainColor = newColor;
+        StartCoroutine(UpdateColor(transitionDelay));
+    }
+
+    IEnumerator UpdateColor(float delay)
+    {
+        float t = delay;
+        Color currColor = m_MainImage.color;
+        while (t > 0)
+        {
+            while (IsSelected)
+            {
+                yield return null;
+            }
+            
+            t-= Time.deltaTime;
+
+            m_MainImage.color = Color.Lerp(currColor, mainColor, 1 - t);
+            yield return null;
+        }
+        m_MainImage.color = mainColor;
     }
 
 

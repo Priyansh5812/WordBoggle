@@ -13,9 +13,7 @@ public class MenuView : MonoBehaviour
     [SerializeField] private Button btn_settings;
 
     [Header("Black Radial Overlay")]
-    [SerializeField] Image circleMask;
-    [SerializeField] Image BlackOverlay;
-    [SerializeField] RectTransform Reference;
+    [SerializeField] TransitionView transitionView;
 
     [Header("Menu Color Overlay")]
     [SerializeField] Image menuBg;
@@ -24,6 +22,9 @@ public class MenuView : MonoBehaviour
     [SerializeField] private Image wordImg;
     [SerializeField] private Image BoggleImg;
     [SerializeField] List<Image> otherProps = new();
+
+    [Header("Complementary Config")]
+    [SerializeField] ColorConfig compConfig;
 
     [Space(10)]
     [SerializeField] private LoadingView loadingView;
@@ -46,9 +47,9 @@ public class MenuView : MonoBehaviour
 
     private async void Start()
     {
+        InitiateBGColorTweening();
         await PrepareStartup();
         InitiatePropAnimations();
-        InitiateBGColorTweening();
     }
 
     private async UniTask PrepareStartup()
@@ -58,10 +59,7 @@ public class MenuView : MonoBehaviour
             i.rectTransform.localScale = Vector3.zero;
         }
 
-        BlackOverlay.rectTransform.sizeDelta = new Vector2(Reference.rect.width, Reference.rect.height);
-        circleMask.rectTransform.sizeDelta = Vector2.up * (Reference.rect.height + 500.0f);
-        Vector2 targetSizeDelta = new Vector3(circleMask.rectTransform.sizeDelta.y, circleMask.rectTransform.sizeDelta.y);
-        Tween t = circleMask.rectTransform.DOSizeDelta(targetSizeDelta, 1.25f).SetDelay(0.25f).SetEase(Ease.InQuad);
+        Tween t = transitionView.StartTransition();
         await UniTask.WaitUntil(() => !t.IsActive());
     }
 
@@ -107,8 +105,10 @@ public class MenuView : MonoBehaviour
     private void InitiateBGColorTweening()
     {
         menuBg.material = new Material(menuBg.material);
-        Color color = menuBg.material.GetColor("_ColorB");
-        Color comp = Util.GetComplementary(color);
+        Color randColor = compConfig.GetRandomColor();
+        menuBg.material.SetColor("_ColorB", randColor);
+        Color color = randColor;
+        Color comp = compConfig.GetComplementary(color);
         DOTween.To(() => color, (Color value) => color = value, comp, 5f).SetDelay(1).SetEase(Ease.InOutQuad).SetLoops(-1, LoopType.Yoyo).OnUpdate(() => 
         {
             menuBg.material.SetColor("_ColorB", color);
@@ -133,12 +133,7 @@ public class MenuView : MonoBehaviour
 
         await UniTask.Delay(500);
         loadingView.StopLoading();
-        circleMask.rectTransform.DOSizeDelta(Vector2.up * circleMask.rectTransform.sizeDelta.y, 1.25f).SetDelay(0.25f).SetEase(Ease.InQuad).OnComplete(() => 
-        {
-            op.allowSceneActivation = true; 
-        });
-        
-
+        transitionView.EndTransition(() => { op.allowSceneActivation = true; });
     }
 
 

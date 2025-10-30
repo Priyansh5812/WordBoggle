@@ -4,8 +4,8 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using WordBoggle;
-using System.Threading.Tasks;
 using System.Collections;
+using Cysharp.Threading.Tasks;
 
 public class StatsView : MonoBehaviour
 {
@@ -36,6 +36,9 @@ public class StatsView : MonoBehaviour
     [Header("Config")]
     [SerializeField] GameConfig m_gameConfig;
 
+    [Space(10)]
+    [SerializeField] TransitionView transitionView; 
+
     //Others
     StatsController m_Controller = null;
     Coroutine m_Routine = null;
@@ -49,7 +52,11 @@ public class StatsView : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(m_Controller.TimerRoutine());
+        transitionView.StartTransition(() =>
+        {
+            this.StartCoroutine(m_Controller.TimerRoutine());
+        });
+        //StartCoroutine(m_Controller.TimerRoutine());
         wordStatusDelay = new(WordStatusDisplayDuration);
     }
 
