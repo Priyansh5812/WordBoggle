@@ -9,13 +9,14 @@ using WordBoggle;
 
 public class GridHandler : MonoBehaviour
 {
+    [SerializeField] Vector2 gridSize;
     [SerializeField] Image menuImage;
     [SerializeField] ColorConfig colorConfig;
 
-    readonly LetterTile[,] grid = new LetterTile[4,4];
     readonly List<string> wordsToInsert = new();
     readonly Dictionary<char, List<Vector2>> LetterReg = new();
     readonly List<string> selectedWords = new();
+    LetterTile[,] grid;
     bool isChangingTheme = false;
 
     private void OnEnable()
@@ -25,6 +26,7 @@ public class GridHandler : MonoBehaviour
 
     private async void Start()
     {
+        grid = new LetterTile[(int)gridSize.x, (int)gridSize.y];
         menuImage.material = new Material(menuImage.material); // Making a copy of the material
         InitializeGrid();
         await AnimateGridAppearance();
@@ -46,9 +48,9 @@ public class GridHandler : MonoBehaviour
     {
         Dictionary<int, List<Transform>> orderedTiles = CollectionPool<Dictionary<int, List<Transform>>, KeyValuePair<int, List<Transform>>>.Get();
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < gridSize.x; i++)
         {
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < gridSize.y; j++)
             {
                 if (!orderedTiles.ContainsKey(i + j))
                     orderedTiles.Add(i + j, new());
@@ -81,7 +83,7 @@ public class GridHandler : MonoBehaviour
     {
         LetterTile[] tiles = this.GetComponentsInChildren<LetterTile>();
 
-        if (tiles.Length > 16)
+        if (tiles.Length > gridSize.x * gridSize.y)
         {
             Debug.LogError("Grid size exceeds the number of Letter Tiles\n Initialization Failed");
             return;
@@ -89,9 +91,9 @@ public class GridHandler : MonoBehaviour
 
         int k = 0;
         Color color = colorConfig.GetComplementary(menuImage.material.GetColor("_ColorB"));
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < gridSize.x; i++)
         {
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < gridSize.y; j++)
             {
                 Vector2 index = Vector2.one;
                 index.x = i;
@@ -167,9 +169,9 @@ public class GridHandler : MonoBehaviour
 
         //----- Finalize for the remaining Valid tiles (if any) with the Random Letters --------
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < gridSize.x; i++)
         {
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < gridSize.y; j++)
             {
                 if (IsValidTile(grid[i, j]))
                 {
@@ -194,7 +196,7 @@ public class GridHandler : MonoBehaviour
 
         while(totalBonusTiles > 0)
         {
-            grid[Random.Range(0, 4), Random.Range(0, 4)].IsBonus = true;
+            grid[Random.Range(0,  (int)gridSize.x), Random.Range(0,  (int)gridSize.y)].IsBonus = true;
             totalBonusTiles--;
         }
 
@@ -204,7 +206,7 @@ public class GridHandler : MonoBehaviour
 
         while (totalBlockedTiles > 0)
         {
-            grid[Random.Range(0, 4), Random.Range(0, 4)].IsBlocked = true;
+            grid[Random.Range(0,  (int)gridSize.x), Random.Range(0,  (int)gridSize.y)].IsBlocked = true;
             totalBlockedTiles--;
         }
 
@@ -214,9 +216,9 @@ public class GridHandler : MonoBehaviour
     //Gets called when game restarts
     private void ReinitGrid()
     {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < gridSize.x; i++)
         {
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < gridSize.y; j++)
             {
                 grid[i, j].ResetTile();
             }
@@ -297,9 +299,9 @@ public class GridHandler : MonoBehaviour
 
     private bool TryAddWordWithEveryValidTile(ref string str, ref List<LetterTile> tiles, bool isFirst = false)
     {   
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < gridSize.x; i++)
         {
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < gridSize.y; j++)
             {
 
                 // For every valid tile...
@@ -497,9 +499,9 @@ public class GridHandler : MonoBehaviour
 
         Color comp = Util.GetComplementary(newColor);
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < gridSize.x; i++)
         {
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < gridSize.y; j++)
             {
                 grid[i, j]?.OnMainColorUpdated(comp, 2f);
             }
@@ -582,7 +584,7 @@ public class GridHandler : MonoBehaviour
 
     private bool IsValidCell(ref Vector2 cell)
     {   
-        return (cell.x >= 0 && cell.x < 4) && (cell.y >= 0 && cell.y < 4);
+        return (cell.x >= 0 && cell.x < gridSize.x) && (cell.y >= 0 && cell.y < gridSize.y);
     }
 
     private bool AreNeighbours(LetterTile tile_1, LetterTile tile_2)
