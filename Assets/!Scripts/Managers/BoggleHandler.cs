@@ -1,13 +1,15 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.InputSystem;
 using UnityEngine.Pool;
 using WordBoggle;
+using static Unity.Burst.Intrinsics.X86;
 public class BoggleHandler : MonoBehaviour
 {
-    private List<LetterTile> tiles = null;
-
+    [SerializeField] GridHandler gridHandler;
+    private List<LetterTile> aux = null;
+    private Queue<LetterTile> selectedTiles = null;
+    LetterTile lastSelectedTile = null;
     private void OnEnable()
     {
         InitListeners();   
@@ -22,19 +24,32 @@ public class BoggleHandler : MonoBehaviour
 
     private void StartSelectionLogic(LetterTile tile)
     {
-        if(tiles == null)
-            tiles = CollectionPool<List<LetterTile> , LetterTile>.Get();
+        if (selectedTiles == null)
+            selectedTiles = new();
 
-        Debug.Log(tile.gameObject.name);
-        tiles.Add(tile);
+        selectedTiles.Enqueue(tile);
+        lastSelectedTile = tile;
+        Debug.Log("Added :" + tile.GetText());
     }
 
-    private void OnSelectLogic(LetterTile tile)
+    private bool OnSelectLogic(LetterTile tile)
     {
-        Debug.Log(tile.gameObject.name);
+        if (selectedTiles.Count == 0)
+        { 
+            Debug.LogError("Start Selection Logic did not encountered a tile as a Starting tile. Investigate !!!");
+            return false;
+        }
 
+        List<LetterTile> neighbours = gridHandler.GetNeighbours(lastSelectedTile.GetTileIndex());
+        bool res = neighbours.Contains(tile);
+        if (res)
+        { 
+            selectedTiles.Enqueue(tile);
+            lastSelectedTile = tile;
+        }
 
-        tiles.Add(tile);
+        CollectionPool<List<LetterTile> , LetterTile>.Release(neighbours);   
+        return res;
     }
 
     private void OnEndSelectionLogic()
@@ -46,24 +61,25 @@ public class BoggleHandler : MonoBehaviour
             return;
 
         // If no tiles were selected, then refrain from proceeding further
-        if (tiles == null || tiles.Count == 0)
+        if (selectedTiles == null || selectedTiles.Count == 0)
             return;
 
         string str = string.Empty;
-
-        foreach (var i in tiles)
-        {
-            i.IsSelected = false;
-            str += i.GetText();
-
+        aux ??= CollectionPool<List<LetterTile>,LetterTile>.Get();
+        while (selectedTiles.Count > 0)
+        {   
+            LetterTile tile = selectedTiles.Dequeue();
+            aux.Add(tile);
+            tile.IsSelected = false;
+            str += tile.GetText();
         }
 
         // Checking whether the collected sequence contains any blocked tile. If any then terminate the function instantly
-        foreach (var i in tiles)
+        foreach (var i in aux)
         {
             if (i.IsBlocked)
             {
-                tiles.Clear();
+                aux.Clear();
                 return;
             }
         }
@@ -73,7 +89,7 @@ public class BoggleHandler : MonoBehaviour
         switch (EventManager.OnValidateWord.Invoke(str))
         {
             case WordValidationType.VALID:
-                OnValidWord(tiles);
+                OnValidWord(aux); // TODO: Remove ToList() alloc
                 break;
             case WordValidationType.INVALID:
                 OnInvalidWord();
@@ -86,13 +102,15 @@ public class BoggleHandler : MonoBehaviour
                 break;
         }
 
-        tiles.Clear();
+        selectedTiles.Clear();
+        aux.Clear();
     }
 
     private void FreeBlockedNeighbourTiles(LetterTile tile)
     {
         // Get the Blocked Neighbours
         List<LetterTile> blockedTiles = EventManager.GetBlockedNeighbours.Invoke(tile);
+
 
         // Unblocked them
         foreach (var b in blockedTiles)
@@ -140,12 +158,9 @@ public class BoggleHandler : MonoBehaviour
     private void OnDisable()
     {
         DeinitListeners();
-
-        if (tiles != null)
-        {
-            CollectionPool<List<LetterTile>, LetterTile>.Release(tiles);
-        }
-
+        selectedTiles?.Clear();
+        if (aux != null)
+            CollectionPool<List<LetterTile>, LetterTile>.Release(aux);
     }
 }
 

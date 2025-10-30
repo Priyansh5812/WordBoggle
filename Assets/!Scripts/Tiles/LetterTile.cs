@@ -98,8 +98,11 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
         if (IsSelected || !IsSelectionStarted)
             return;
 
-        EventManager.OnSelect?.Invoke(this);
-        IsSelected = true;
+        bool? value = EventManager.OnSelect?.Invoke(this);
+        
+        if(value.HasValue && value.Value)
+            IsSelected = true;
+       
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -119,27 +122,31 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
 
     public void OnMainColorUpdated(Color newColor , float transitionDelay)
     {
-        mainColor = newColor;
-        StartCoroutine(UpdateColor(transitionDelay));
+        //mainColor = newColor;
+        StartCoroutine(UpdateColor(newColor , transitionDelay));
     }
 
-    IEnumerator UpdateColor(float delay)
+    IEnumerator UpdateColor(Color newColor , float delay)
     {
         float t = delay;
         Color currColor = m_MainImage.color;
         while (t > 0)
-        {
-            while (IsSelected)
-            {
-                yield return null;
-            }
-            
+        {            
             t-= Time.deltaTime;
 
-            m_MainImage.color = Color.Lerp(currColor, mainColor, 1 - t);
+            mainColor = Color.Lerp(currColor, newColor, 1 - t);
+
+            if(!IsSelected)
+                m_MainImage.color = Color.Lerp(currColor, newColor, 1 - t);
+
             yield return null;
         }
-        m_MainImage.color = mainColor;
+
+        if(!IsSelected)
+            m_MainImage.color = newColor;
+        mainColor = newColor;
+
+
     }
 
 
