@@ -2048,6 +2048,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b593ccb536665b468211360b4b97546, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gridHandler: {fileID: 1142394808}
 --- !u!4 &766306835
 Transform:
   m_ObjectHideFlags: 0
@@ -2722,7 +2723,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 55.52}
+  m_AnchoredPosition: {x: 0, y: 55.51999}
   m_SizeDelta: {x: 0, y: 111.03998}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1041343024
@@ -3294,8 +3295,8 @@ MonoBehaviour:
   m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 160, y: 160}
-  m_Spacing: {x: 10, y: 10}
+  m_CellSize: {x: 150, y: 150}
+  m_Spacing: {x: 20, y: 20}
   m_Constraint: 1
   m_ConstraintCount: 5
 --- !u!1 &1255002912
@@ -3883,7 +3884,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: -54.65}
+  m_AnchoredPosition: {x: 0, y: -54.649994}
   m_SizeDelta: {x: 0, y: 109.29999}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1565432457

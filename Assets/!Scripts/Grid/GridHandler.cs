@@ -524,7 +524,7 @@ public class GridHandler : MonoBehaviour
         new Vector2(1,1) // bottom-right // Vector2.right + Vector2.up
     };
 
-    private List<LetterTile> GetNeighbours(Vector2 cell)
+    public List<LetterTile> GetNeighbours(Vector2 cell)
     {
         List<LetterTile> tiles = CollectionPool<List<LetterTile>, LetterTile>.Get();
 

@@ -20,7 +20,7 @@ public static class EventManager
         get; private set;
     } = new();
 
-    public static ActionEvent<LetterTile> OnSelect
+    public static FuncEvent<LetterTile , bool> OnSelect
     {
         get; private set;
     } = new();
