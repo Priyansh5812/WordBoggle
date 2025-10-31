@@ -13,6 +13,11 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
     [SerializeField] TextMeshProUGUI m_Text;
     [SerializeField] Image m_MainImage;
     [SerializeField] Image m_BonusImage;
+
+    [Header("Selection-Related")]
+    [SerializeField] Sprite selectedSprite;
+    [SerializeField] Sprite unselectedSprite;
+
     [Header("Grid-Related")]
     [SerializeField] Vector2 m_Index;
     [SerializeField, Range(0f, 1f)] float m_SelectedTileScale;
@@ -88,7 +93,7 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
 
     public void SetLetter(string le)
     {   
-        m_Text?.SetText(le);
+        m_Text?.SetText(le?.ToLower());
     }
 
 
@@ -99,7 +104,7 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
         {
             DOTween.Kill(m_MainImage);
         }
-
+        m_MainImage.sprite = value ? selectedSprite : unselectedSprite;
         m_MainImage.rectTransform.DOScale(Vector3.one * (value ? m_SelectedTileScale : 1.0f), 0.25f).SetEase(Ease.OutQuad).SetId(m_MainImage);
         m_MainImage.color = value ? Color.white : mainColor;
     }

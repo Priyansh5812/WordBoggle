@@ -80,7 +80,7 @@ public class StatsView : MonoBehaviour
 
     public void UpdateTimerUI(int mins , int secs)
     {
-        m_TimerText?.SetText($"{(mins < 10 ? ("0" + mins.ToString()) : (mins.ToString()))} : {(secs < 10 ? ("0" + secs.ToString()) : (secs.ToString()))}");
+        m_TimerText?.SetText($"{(mins < 10 ? ("0" + mins.ToString()) : (mins.ToString()))}:{(secs < 10 ? ("0" + secs.ToString()) : (secs.ToString()))}");
     }
 
     public void UpdateScoreUI(int score)

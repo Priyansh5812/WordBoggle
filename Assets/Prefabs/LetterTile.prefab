@@ -432,6 +432,8 @@ MonoBehaviour:
   m_Text: {fileID: 3607313622835476064}
   m_MainImage: {fileID: 8534418721661827965}
   m_BonusImage: {fileID: 5834477899097262643}
+  selectedSprite: {fileID: -2413806693520163455, guid: 5d1efe3dbb2598f4b9ed5777deacafd2, type: 3}
+  unselectedSprite: {fileID: -4176928632287528121, guid: cd5c1d31a9b96d0448dabc16f86cde84, type: 3}
   m_Index: {x: 0, y: 0}
   m_SelectedTileScale: 0.8
   m_Blockcg: {fileID: 3208058508141935848}

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8108c948dc294ef4e90370c778c9c7b2, type: 3}
   m_Name: GameConfig
   m_EditorClassIdentifier: 
-  minutes: 1
+  minutes: 0
   seconds: 30
   scorePerLetter: 5
   scorePerBonus: 10
