@@ -143,7 +143,7 @@ public class StatsView : MonoBehaviour
         cg_GameOver.interactable = cg_GameOver.blocksRaycasts = false;
 
         //-----------------------------------------------
-
+        
         m_Controller.ResetStats();
 
         //-----------------------------------------------
@@ -154,6 +154,8 @@ public class StatsView : MonoBehaviour
 
         //-----------------------------------------------
         EventManager.OnGameRestart.Invoke();
+
+        
     }
 
     private void UpdateValidWordStatus(List<LetterTile> tiles)

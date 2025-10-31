@@ -996,17 +996,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 6212757735603118224, guid: a8077eb29b07acf42af6c7615cddd013, type: 3}
   m_PrefabInstance: {fileID: 368611326501162838}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &956701862 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1367628436291077054, guid: a8077eb29b07acf42af6c7615cddd013, type: 3}
-  m_PrefabInstance: {fileID: 368611326501162838}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &956999828 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2044816843435747562, guid: a8077eb29b07acf42af6c7615cddd013, type: 3}
@@ -1016,17 +1005,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 806a4cd91d933484eb8ab16b613e9b73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &958329613 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 600706323254318112, guid: a8077eb29b07acf42af6c7615cddd013, type: 3}
-  m_PrefabInstance: {fileID: 368611326501162838}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c270ea6536fedef44a71fa8a43d759cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &965299689
@@ -1531,9 +1509,6 @@ MonoBehaviour:
   cg_main: {fileID: 1664087668}
   btn_start: {fileID: 88571442}
   btn_settings: {fileID: 109976203}
-  circleMask: {fileID: 956701862}
-  BlackOverlay: {fileID: 958329613}
-  Reference: {fileID: 0}
   transitionView: {fileID: 956999828}
   menuBg: {fileID: 73852802}
   wordImg: {fileID: 1141330586}

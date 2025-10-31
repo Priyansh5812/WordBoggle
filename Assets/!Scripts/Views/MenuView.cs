@@ -31,7 +31,7 @@ public class MenuView : MonoBehaviour
     private void OnEnable()
     {   
         // Wait for callback if words are not loaded
-        if (!WordsManager.areWordsLoaded)
+        if (!WordsManager.areWordsLoaded || !WordsManager.areCheckerWordsLoaded)
         {
             cg_main.interactable = false;
             
@@ -41,7 +41,7 @@ public class MenuView : MonoBehaviour
             SetMenuInteractable();
         }
 
-        WordsManager.OnWordsLoaded.AddListener(SetMenuInteractable);
+        WordsManager.onWordsLoaded += SetMenuInteractable;
         btn_start?.onClick.AddListener(SetupLoadingGameScene);
     }
 
@@ -139,7 +139,7 @@ public class MenuView : MonoBehaviour
 
     private void OnDisable()
     {
-        WordsManager.OnWordsLoaded.RemoveListener(SetMenuInteractable);
+        WordsManager.onWordsLoaded -= SetMenuInteractable;
         btn_start?.onClick.RemoveListener(SetupLoadingGameScene);
         DOTween.KillAll();
     }

@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Events;
-using System.Threading.Tasks;
 using System.Collections;
 using WordBoggle;
 
@@ -14,9 +13,11 @@ public class WordsManager : MonoBehaviour
     } = new();
 
     public static bool areWordsLoaded = false;
-
+    public static bool areCheckerWordsLoaded = false;
+    public static event System.Action onWordsLoaded;
     TextAsset wordsTxt;
-    static Node rootNode;
+    static Node checkerRootNode;
+    static Node wordsRootNode;
     private void Start()
     {
         if (m_instance == null)
@@ -29,6 +30,19 @@ public class WordsManager : MonoBehaviour
             Destroy(this.gameObject);
 
         StartCoroutine(LoadWords());
+        StartCoroutine(LoadCheckerWords());
+        StartCoroutine(MonitorWordsLoadCallback());
+    }
+
+    IEnumerator MonitorWordsLoadCallback()
+    {
+        while (!areWordsLoaded || !areCheckerWordsLoaded)
+        { 
+            yield return null;
+        }
+
+        onWordsLoaded?.Invoke();
+
     }
 
     private void InitListeners()
@@ -40,6 +54,22 @@ public class WordsManager : MonoBehaviour
 
     IEnumerator LoadWords()
     {   
+        ResourceRequest req = Resources.LoadAsync<TextAsset>("easyWords");
+
+        while (!req.isDone)
+        {
+            yield return null;
+        }
+        
+        wordsTxt = req.asset as TextAsset;
+
+        string[] words = wordsTxt.text.Split('\n');
+        GenerateWordTree(ref wordsRootNode , ref words);
+        areWordsLoaded = true;
+    }
+
+    IEnumerator LoadCheckerWords()
+    {   
         ResourceRequest req = Resources.LoadAsync<TextAsset>("wordlist");
 
         while (!req.isDone)
@@ -50,22 +80,21 @@ public class WordsManager : MonoBehaviour
         wordsTxt = req.asset as TextAsset;
 
         string[] words = wordsTxt.text.Split('\n');
-        GenerateWordTree(ref words);
-        areWordsLoaded = true;
-        OnWordsLoaded?.Invoke();
+        GenerateWordTree(ref checkerRootNode , ref words);
+        areCheckerWordsLoaded = true;
     }
 
 
     private static string GetRandomWord()
     {   
-        string str = GetRandomWordInternal(ref rootNode); ;
+        string str = GetRandomWordInternal(ref wordsRootNode); ;
         Debug.Log("Got Word " + str);
         return str;
     }
 
     private bool DoesWordExistsInTree(string str)
     {
-        Node node = rootNode;
+        Node node = checkerRootNode;
 
         for(int i = 0; i < str.Length; i++)
         {
@@ -89,16 +118,16 @@ public class WordsManager : MonoBehaviour
     }
 
 
-    private void GenerateWordTree(ref string[] words)
+    private void GenerateWordTree(ref Node RootNode , ref string[] words)
     {
-        rootNode = new('\n' , false);
+        RootNode = new('\n' , false);
 
         int limit = Mathf.Min(Constants.MAX_WORDS_IN_TREE, words.Length);
         for(int i = 0; i < limit; i++)
         {
             string str = words[i];
             int index = 0;
-            AddWord(ref rootNode, ref index, ref str);
+            AddWord(ref RootNode, ref index, ref str);
         }
     }
 

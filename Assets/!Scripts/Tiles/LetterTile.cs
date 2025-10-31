@@ -6,17 +6,24 @@ using UnityEngine.UI;
 using WordBoggle;
 using DG.Tweening;
 using System.Collections;
+using Cysharp.Threading.Tasks;
 
 public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler
 {
     [SerializeField] TextMeshProUGUI m_Text;
     [SerializeField] Image m_MainImage;
     [SerializeField] Image m_BonusImage;
-    [SerializeField] Image m_BlockImage;
-
     [Header("Grid-Related")]
     [SerializeField] Vector2 m_Index;
     [SerializeField, Range(0f, 1f)] float m_SelectedTileScale;
+
+    [Header("Block-Related")]
+    [SerializeField] CanvasGroup m_Blockcg;
+    [SerializeField] Animator BlockImageAnimator;
+    private static int destruction_hash = Animator.StringToHash("Destruction");
+    private static int blocked_hash = Animator.StringToHash("Reset");
+    private static int notBlocked_hash = Animator.StringToHash("NotBlocked");
+    private static float blockAnimationLength;
 
     [Header("Internals")]
     private bool m_IsBonus = false;
@@ -53,6 +60,26 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
 
     private Color mainColor;
     
+    public void Start()
+    {
+        InitBlockAnimationData();
+    }
+
+    private void InitBlockAnimationData()
+    {
+        if (blockAnimationLength != 0.0f)
+            return;
+
+        RuntimeAnimatorController controller = BlockImageAnimator.runtimeAnimatorController;
+        foreach (var clip in controller.animationClips)
+        {
+            if (Animator.StringToHash(clip.name) == destruction_hash)
+            {
+                Debug.Log("Length: " + clip.length);
+                blockAnimationLength = clip.length;
+            }
+        }
+    }
 
     public void SetGridIndex(in Vector2 GridIndex)
     { 
@@ -89,9 +116,34 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
 
     private void SetAsBlockedTile(bool value)
     {
-        m_IsBlocked = value;
-        m_BlockImage.gameObject.SetActive(value);
+        AnimateTileBlocker(value, () =>
+        {
+            m_IsBlocked = value;
+        });
     }
+
+    private async void AnimateTileBlocker(bool isBlocked, Action  OnComplete = null)
+    {
+        if (isBlocked)
+        {
+            BlockImageAnimator.Play(blocked_hash);  
+        }
+        else
+        {
+            BlockImageAnimator.Play(destruction_hash);
+            await UniTask.Delay(Mathf.CeilToInt(blockAnimationLength) * 1000);
+        }
+
+        OnComplete?.Invoke();
+    }
+
+    private void ResetTileBlocker()
+    {
+        BlockImageAnimator.Play(notBlocked_hash);
+        m_IsBlocked = false;
+    }
+
+
 
     public void OnPointerEnter(PointerEventData eventData)
     {
@@ -154,7 +206,7 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
     {
         this.SetLetter(string.Empty);
         this.IsBonus = false;
-        this.IsBlocked = false;
+        ResetTileBlocker();
         this.IsSelected = false;
         IsSelectionStarted = false;
     }
