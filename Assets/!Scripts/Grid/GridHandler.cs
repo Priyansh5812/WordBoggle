@@ -167,6 +167,21 @@ public class GridHandler : MonoBehaviour
             Debug.Log($"Word Added : {str}");
         }
 
+        // -------------- Choose Random Tiles as Bonus ones ----------------------
+        int totalBonusTiles = Random.Range(1, Constants.MAX_BONUS_IN_GAME + 1);
+
+        while (totalBonusTiles > 0)
+        {
+            LetterTile tile = grid[Random.Range(0, (int)gridSize.x), Random.Range(0, (int)gridSize.y)];
+            if (!IsValidTile(tile) && !tile.IsBonus) // Tile must not be occupied and mus not be set for bonus before as well...
+            { 
+                tile.IsBonus = true;
+                totalBonusTiles--;
+            }
+        }
+
+
+
         //----- Finalize for the remaining Valid tiles (if any) with the Random Letters --------
 
         for (int i = 0; i < gridSize.x; i++)
@@ -189,16 +204,7 @@ public class GridHandler : MonoBehaviour
             }
         }
 
-        // -------------- Choose Random Tiles as Bonus ones ----------------------
 
-
-        int totalBonusTiles = Random.Range(1, Constants.MAX_BONUS_IN_GAME+1);
-
-        while(totalBonusTiles > 0)
-        {
-            grid[Random.Range(0,  (int)gridSize.x), Random.Range(0,  (int)gridSize.y)].IsBonus = true;
-            totalBonusTiles--;
-        }
 
         // -------------- Choose Random Tiles as Blocked ones ----------------------
 

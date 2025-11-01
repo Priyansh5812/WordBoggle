@@ -1,11 +1,12 @@
-using UnityEngine;
-using TMPro;
-using UnityEngine.UI;
-using System.Collections.Generic;
-using UnityEngine.SceneManagement;
-using WordBoggle;
-using System.Collections;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using WordBoggle;
 
 public class StatsView : MonoBehaviour
 {
@@ -22,7 +23,7 @@ public class StatsView : MonoBehaviour
     [SerializeField] CanvasGroup cg_GameOver;
 
     [Header("Past-Words Related")]
-    [SerializeField] TextMeshProUGUI m_WordPrefab;
+    [SerializeField] ExistingWord m_WordPrefab;
     [SerializeField] RectTransform m_ExistingWordParent;
     [SerializeField] float WordStatusDisplayDuration;
 
@@ -37,17 +38,24 @@ public class StatsView : MonoBehaviour
     [SerializeField] GameConfig m_gameConfig;
 
     [Space(10)]
-    [SerializeField] TransitionView transitionView; 
+    [SerializeField] TransitionView transitionView;
+
+    [Header("Others")]
+    [SerializeField] RectTransform[] bubbles;
+    [SerializeField] ScrollRect scrollView;
 
     //Others
     StatsController m_Controller = null;
     Coroutine m_Routine = null;
+    Coroutine existingWordsOperation = null;
     WaitForSeconds wordStatusDelay;
+    Queue<string> wordsToUpdate = new();
 
     void OnEnable()
     {
         m_Controller ??= new(this,m_gameConfig);
         InitListeners();
+        InitiateBubblesAnimation();
     }
 
     private void Start()
@@ -56,7 +64,7 @@ public class StatsView : MonoBehaviour
         {
             this.StartCoroutine(m_Controller.TimerRoutine());
         });
-        //StartCoroutine(m_Controller.TimerRoutine());
+        
         wordStatusDelay = new(WordStatusDisplayDuration);
     }
 
@@ -90,13 +98,34 @@ public class StatsView : MonoBehaviour
 
     public void UpdateExistingWordsUI(string word)
     {
-        TextMeshProUGUI wordText = Instantiate(m_WordPrefab, m_ExistingWordParent);
-        wordText?.SetText(word);
+        wordsToUpdate.Enqueue(word);
+        existingWordsOperation ??= StartCoroutine(MonitorExistingWordsUIOperation());
+        //ExistingWord eWord = Instantiate(m_WordPrefab, m_ExistingWordParent);
+        //await eWord?.ShowWord(word, 1.2f);
+    }
+
+    IEnumerator MonitorExistingWordsUIOperation()
+    {
+        while (wordsToUpdate.Count > 0)
+        {   
+            ExistingWord eWord = Instantiate(m_WordPrefab, m_ExistingWordParent);
+            if (DOTween.IsTweening(scrollView))
+                DOTween.Kill(scrollView);
+            scrollView.DOVerticalNormalizedPos(0f, 0.5f).SetEase(Ease.OutQuad).SetId(scrollView);
+            yield return eWord?.ShowWord(wordsToUpdate.Dequeue(), 0.5f);
+        }
+
+        existingWordsOperation = null;
     }
 
     private void ResetExistingWordsUI()
     {
-        TextMeshProUGUI[] existingWords = m_ExistingWordParent.GetComponentsInChildren<TextMeshProUGUI>();
+        if (existingWordsOperation != null)
+            StopCoroutine(existingWordsOperation);
+
+        wordsToUpdate.Clear();
+
+        ExistingWord[] existingWords = m_ExistingWordParent.GetComponentsInChildren<ExistingWord>();
 
         foreach (var i in existingWords)
         {
@@ -217,6 +246,19 @@ public class StatsView : MonoBehaviour
 
     #endregion
 
+
+    private void InitiateBubblesAnimation()
+    {
+        foreach (var i in bubbles)
+        {
+            float currValue = i.position.y;
+            i.DOMoveY(currValue + 0.05f, 5f).SetDelay(Random.Range(1f, 10f)).SetLoops(-1 , LoopType.Yoyo).SetEase(Ease.InOutQuad);
+        }
+    }
+
+
+
+
     private void DeinitListeners()
     {
         EventManager.OnValidWordSelected.RemoveListener(m_Controller.ProcessValidWord);
@@ -236,6 +278,9 @@ public class StatsView : MonoBehaviour
     private void OnDisable()
     {
         DeinitListeners();
+        if (DOTween.IsTweening(scrollView))
+            DOTween.Kill(scrollView);
+        DOTween.KillAll();
     }
 
     private void OnDestroy()
