@@ -11,10 +11,10 @@ public class ExistingWord : MonoBehaviour
     [SerializeField] TextMeshProUGUI word;
     [SerializeField] CanvasGroup cg_main;
     CancellationTokenSource cts;
-    Color targetColor = Color.clear;
+    [SerializeField] Color targetColor;
     private void OnEnable()
     {
-        targetColor = targetColor == Color.clear ? highlight.color : targetColor; 
+        highlight.color = Color.clear;
         cts = new CancellationTokenSource();
     }
 
@@ -39,7 +39,7 @@ public class ExistingWord : MonoBehaviour
 
     public void Hightlight(System.Action OnComplete = null) 
     {
-        highlight.DOColor(Color.clear, 1f).SetEase(Ease.OutQuad).SetId(highlight).SetLoops(2, LoopType.Yoyo).OnComplete(() =>
+        highlight.DOColor(targetColor, 1f).SetEase(Ease.OutQuad).SetId(highlight).SetLoops(2, LoopType.Yoyo).OnComplete(() =>
         {
             OnComplete?.Invoke();
         });

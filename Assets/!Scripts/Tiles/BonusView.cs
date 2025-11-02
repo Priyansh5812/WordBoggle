@@ -6,6 +6,7 @@ public class BonusView : MonoBehaviour
 {
     private Image m_Image = null;
     private Material auxMat = null;
+
     private void OnEnable()
     {
         PrepareStartup();

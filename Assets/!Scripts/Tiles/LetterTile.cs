@@ -24,6 +24,9 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
     [SerializeField] Vector2 m_Index;
     [SerializeField, Range(0f, 1f)] float m_SelectedTileScale;
 
+    [Header("Bonus-Related")]
+    [SerializeField] ParticleSystem bonusParticles;
+
     [Header("Block-Related")]
     [SerializeField] CanvasGroup m_Blockcg;
     [SerializeField] Animator BlockImageAnimator;
@@ -150,9 +153,11 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
         m_IsChangingBlocked = false;
     }
 
+    public void PlayBonusParticles()
+    {
+        bonusParticles?.Play();
+    }
 
-
-    [ContextMenu("ShowWrong")]
     public void VibrateOnWrong()
     {
         cg_main.interactable = cg_main.blocksRaycasts = false;

@@ -104,7 +104,7 @@ public class BoggleHandler : MonoBehaviour
                 OnInvalidWord();
                 break;
             case WordValidationType.EXISTING:
-                OnExistingWord();
+                OnExistingWord(str);
                 break;
             default:
                 Debug.LogError("Unknown validation verdict");
@@ -142,9 +142,9 @@ public class BoggleHandler : MonoBehaviour
         EventManager.OnValidWordSelected.Invoke(tiles);
     }
 
-    private void OnExistingWord()
+    private void OnExistingWord(string str)
     {
-        EventManager.OnExistingWordSelected.Invoke();
+        EventManager.OnExistingWordSelected.Invoke(str);
     }
 
     private void OnInvalidWord()

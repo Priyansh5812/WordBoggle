@@ -40,7 +40,7 @@ public static class EventManager
         get; private set;
     } = new();
 
-    public static ActionEvent OnExistingWordSelected
+    public static ActionEvent<string> OnExistingWordSelected
     {
         get; private set;
     } = new();

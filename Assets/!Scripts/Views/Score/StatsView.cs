@@ -1,4 +1,3 @@
-using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using WordBoggle;
+
 
 public class StatsView : MonoBehaviour
 {
@@ -45,7 +44,7 @@ public class StatsView : MonoBehaviour
     [Header("Others")]
     [SerializeField] RectTransform[] bubbles;
     [SerializeField] ScrollRect scrollView;
-
+     
     //Others
     StatsController m_Controller = null;
     Coroutine m_Routine = null;
@@ -54,6 +53,7 @@ public class StatsView : MonoBehaviour
     Queue<string> wordsToUpdate = new();
     Vector3 restAnchoredPosition = Vector3.zero;
     int c = 0;
+    bool isHighlighting = false;
     Dictionary<string, (ExistingWord , int)> existingWords;
     void OnEnable()
     {
@@ -110,10 +110,14 @@ public class StatsView : MonoBehaviour
         while (wordsToUpdate.Count > 0)
         {   
             ExistingWord eWord = Instantiate(m_WordPrefab, m_ExistingWordParent);
+
+            string word = wordsToUpdate.Dequeue(); 
+            existingWords[word] = (eWord, c++); // saving the order
+
             if (DOTween.IsTweening(scrollView))
                 DOTween.Kill(scrollView);
             scrollView.DOVerticalNormalizedPos(0f, 0.5f).SetEase(Ease.OutQuad).SetId(scrollView);
-            yield return eWord?.ShowWord(wordsToUpdate.Dequeue(), 0.5f);
+            yield return eWord?.ShowWord(word, 0.5f);
         }
 
         existingWordsOperation = null;
@@ -233,31 +237,22 @@ public class StatsView : MonoBehaviour
         transitionView.EndTransition(action1);
     }
 
-    private void UpdateExistingWordStatus()
+    private void UpdateExistingWordStatus(string str)
     {
-        if (m_Routine != null)
-            StopCoroutine(m_Routine);
+        if (isHighlighting)
+            return;
 
-        m_Routine = StartCoroutine(UpdateWordStatusForExisting());
-    }
+        isHighlighting = true;
+
+        if (DOTween.IsTweening(scrollView))
+            DOTween.Kill(scrollView);
 
 
-    IEnumerator UpdateWordStatusForExisting()
-    {   
-        // Need something which tells that word already exists
-
-        m_WordStatus?.SetText("Word already exists");
-        Color color = Color.white;
-        ColorUtility.TryParseHtmlString(Constants.EXISTING_COLOR, out color);
-        m_WordStatus.color = color;
-        yield return wordStatusDelay;
-        m_WordStatus.color = Color.clear;
-        m_Routine = null;
+        scrollView.DOVerticalNormalizedPos(1 - ((float)existingWords[str].Item2 / m_ExistingWordParent.transform.childCount), 0.25f);
+        existingWords[str].Item1.Hightlight(() => isHighlighting = false);
     }
 
     #endregion
-
-
 
 
     private void InitiateBubblesAnimation()
@@ -290,6 +285,7 @@ public class StatsView : MonoBehaviour
 
         CollectionPool<Dictionary<string, (ExistingWord, int)>, KeyValuePair<string, (ExistingWord, int)>>.Release(existingWords);
         existingWords = null;
+        c = 0;
 
         if (DOTween.IsTweening(scrollView))
             DOTween.Kill(scrollView);
