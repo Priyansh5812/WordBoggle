@@ -47,6 +47,7 @@ public class MenuView : MonoBehaviour
 
     private async void Start()
     {
+        Application.targetFrameRate = 144;
         InitiateBGColorTweening();
         await PrepareStartup();
         InitiatePropAnimations();

@@ -79,19 +79,28 @@ public class BoggleHandler : MonoBehaviour
         {
             if (i.IsBlocked)
             {
+                foreach (var j in aux)
+                {
+                    j.VibrateOnWrong();
+                }
                 aux.Clear();
                 return;
             }
         }
 
-        Debug.Log("Word Selected : " + str);
-
         switch (EventManager.OnValidateWord.Invoke(str))
         {
             case WordValidationType.VALID:
-                OnValidWord(aux); // TODO: Remove ToList() alloc
+                OnValidWord(aux);
                 break;
             case WordValidationType.INVALID:
+
+                // Shake the wrong ones
+                foreach (var j in aux)
+                {
+                    j.VibrateOnWrong();
+                }
+
                 OnInvalidWord();
                 break;
             case WordValidationType.EXISTING:

@@ -3,14 +3,18 @@ using DG.Tweening;
 using System.Threading;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ExistingWord : MonoBehaviour
 {
+    [SerializeField] Image highlight;
     [SerializeField] TextMeshProUGUI word;
     [SerializeField] CanvasGroup cg_main;
     CancellationTokenSource cts;
+    Color targetColor = Color.clear;
     private void OnEnable()
     {
+        targetColor = targetColor == Color.clear ? highlight.color : targetColor; 
         cts = new CancellationTokenSource();
     }
 
@@ -33,11 +37,22 @@ public class ExistingWord : MonoBehaviour
         }
     }
 
+    public void Hightlight(System.Action OnComplete = null) 
+    {
+        highlight.DOColor(Color.clear, 1f).SetEase(Ease.OutQuad).SetId(highlight).SetLoops(2, LoopType.Yoyo).OnComplete(() =>
+        {
+            OnComplete?.Invoke();
+        });
+    }
+
 
     private void OnDisable()
     {
         if (DOTween.IsTweening(this))
             DOTween.Kill(this);
+
+        if (DOTween.IsTweening(highlight))
+            DOTween.Kill(highlight);
 
         cts?.Cancel();
         cts?.Dispose();

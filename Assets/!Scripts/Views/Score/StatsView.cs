@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using WordBoggle;
@@ -19,6 +20,7 @@ public class StatsView : MonoBehaviour
     [SerializeField] TextMeshProUGUI m_WordStatus;
 
     [Header("Canvas Group")]
+    [SerializeField] CanvasGroup cg_overlay;
     [SerializeField] CanvasGroup cg_Pause;
     [SerializeField] CanvasGroup cg_GameOver;
 
@@ -50,10 +52,13 @@ public class StatsView : MonoBehaviour
     Coroutine existingWordsOperation = null;
     WaitForSeconds wordStatusDelay;
     Queue<string> wordsToUpdate = new();
-
+    Vector3 restAnchoredPosition = Vector3.zero;
+    int c = 0;
+    Dictionary<string, (ExistingWord , int)> existingWords;
     void OnEnable()
     {
         m_Controller ??= new(this,m_gameConfig);
+        existingWords ??= CollectionPool<Dictionary<string, (ExistingWord, int)>, KeyValuePair<string, (ExistingWord, int)>>.Get();
         InitListeners();
         InitiateBubblesAnimation();
     }
@@ -73,9 +78,7 @@ public class StatsView : MonoBehaviour
     {
         EventManager.OnValidWordSelected.AddListener(m_Controller.ProcessValidWord);
         EventManager.IsGameOver.AddListener(m_Controller.GetIsGameOver);
-        EventManager.OnValidWordSelected.AddListener(UpdateValidWordStatus);
         EventManager.OnExistingWordSelected.AddListener(UpdateExistingWordStatus);
-        EventManager.OnInvalidWordSelected.AddListener(UpdateInvalidWordStatus);
 
         btn_Pause.onClick.AddListener(TriggerGamePause);
         btn_Resume.onClick.AddListener(ResumeGame);
@@ -100,8 +103,6 @@ public class StatsView : MonoBehaviour
     {
         wordsToUpdate.Enqueue(word);
         existingWordsOperation ??= StartCoroutine(MonitorExistingWordsUIOperation());
-        //ExistingWord eWord = Instantiate(m_WordPrefab, m_ExistingWordParent);
-        //await eWord?.ShowWord(word, 1.2f);
     }
 
     IEnumerator MonitorExistingWordsUIOperation()
@@ -133,26 +134,54 @@ public class StatsView : MonoBehaviour
         }
     }
 
+
+
     private void TriggerGamePause()
     {
         if (m_Controller.IsGameOver)
             return;
 
-        cg_Pause.alpha = 1.0f;
-        cg_Pause.interactable = cg_Pause.blocksRaycasts = true;
+        if (DOTween.IsTweening(cg_overlay))
+            DOTween.Kill(cg_overlay);
+
         m_Controller.IsGamePaused = true;
+
+        cg_overlay.blocksRaycasts = true;
+        cg_Pause.interactable = false;
+        restAnchoredPosition = (cg_Pause.transform as RectTransform).anchoredPosition;
+        cg_overlay.DOFade(1f, 0.5f).SetEase(Ease.OutQuad).SetId(cg_overlay).OnComplete(() => 
+        {
+            (cg_Pause.transform as RectTransform)?.DOAnchorPos(Vector3.zero, 1f).SetEase(Ease.OutBounce).OnComplete(() =>
+            {
+                cg_Pause.interactable = cg_Pause.blocksRaycasts = true;
+                
+            });
+        });
+        
     }
 
-    private void ResumeGame()
+    private void ResumeGame() 
     {
-        cg_Pause.alpha = 0.0f;
+        if (DOTween.IsTweening(cg_overlay))
+            DOTween.Kill(cg_overlay);
+
         cg_Pause.interactable = cg_Pause.blocksRaycasts = false;
-        m_Controller.IsGamePaused = false;
+        (cg_Pause.transform as RectTransform)?.DOAnchorPos(restAnchoredPosition, 0.75f).SetEase(Ease.InQuad).OnComplete(() =>
+        {
+            cg_overlay.DOFade(0.0f, 1f).SetEase(Ease.OutQuad).SetId(cg_overlay).OnComplete(() =>
+            {
+                cg_overlay.blocksRaycasts = false;
+                m_Controller.IsGamePaused = false;
+            });
+        });
+
     }
 
     private void QuitGame()
     {
-        SceneManager.LoadScene(0);
+        cg_GameOver.interactable = cg_GameOver.blocksRaycasts = false;
+        cg_Pause.interactable = cg_Pause.blocksRaycasts = false;
+        transitionView.EndTransition(() => { SceneManager.LoadScene(0);});
     }
 
     public void TriggerGameOver((int,int,int) data)
@@ -161,38 +190,47 @@ public class StatsView : MonoBehaviour
         m_BonusText_GM?.SetText($"Total Bonus : {data.Item2}");
         m_TotalWordsText_GM?.SetText($"Total Words Found : {data.Item3}");
 
+        cg_overlay.blocksRaycasts = true;
+        cg_GameOver.interactable = false;
+        restAnchoredPosition = (cg_GameOver.transform as RectTransform).anchoredPosition;
 
-        cg_GameOver.alpha = 1.0f;
-        cg_GameOver.interactable = cg_GameOver.blocksRaycasts = true;
+        if (DOTween.IsTweening(cg_overlay))
+            DOTween.Kill(cg_overlay);
+
+        cg_overlay.DOFade(1f, 0.5f).SetEase(Ease.OutQuad).SetId(cg_overlay).OnComplete(() =>
+        {
+            (cg_GameOver.transform as RectTransform)?.DOAnchorPos(Vector3.zero, 1f).SetEase(Ease.OutBounce).OnComplete(() =>
+            {
+                cg_GameOver.interactable = cg_GameOver.blocksRaycasts = true;
+            });
+        });
+
     }
 
     private void RestartGame()
     {
-        cg_GameOver.alpha = 0.0f;
         cg_GameOver.interactable = cg_GameOver.blocksRaycasts = false;
+        System.Action action1 = () =>
+        {
+            cg_overlay.alpha = 0.0f;
+            cg_overlay.blocksRaycasts = false;
+            //-----------------------------------------------
+            (cg_GameOver.transform as RectTransform).anchoredPosition = restAnchoredPosition;
+            //-----------------------------------------------
+            m_Controller.ResetStats();
+            //-----------------------------------------------
+            ResetExistingWordsUI();
+            //-----------------------------------------------
+            EventManager.OnGameRestart.Invoke();
+            //-----------------------------------------------
+            System.Action action2 = () =>
+            {
+                StartCoroutine(m_Controller.TimerRoutine());
+            };
+            transitionView.StartTransition(action2);
 
-        //-----------------------------------------------
-        
-        m_Controller.ResetStats();
-
-        //-----------------------------------------------
-
-        ResetExistingWordsUI();
-
-        StartCoroutine(m_Controller.TimerRoutine());
-
-        //-----------------------------------------------
-        EventManager.OnGameRestart.Invoke();
-
-        
-    }
-
-    private void UpdateValidWordStatus(List<LetterTile> tiles)
-    {
-        if (m_Routine != null)
-            StopCoroutine(m_Routine);
-
-        m_Routine = StartCoroutine(UpdateWordStatusForValid());
+        };
+        transitionView.EndTransition(action1);
     }
 
     private void UpdateExistingWordStatus()
@@ -203,28 +241,11 @@ public class StatsView : MonoBehaviour
         m_Routine = StartCoroutine(UpdateWordStatusForExisting());
     }
 
-    private void UpdateInvalidWordStatus()
-    {
-        if (m_Routine != null)
-            StopCoroutine(m_Routine);
 
-        m_Routine = StartCoroutine(UpdateWordStatusForInvalid());
-    }
-
-
-
-    IEnumerator UpdateWordStatusForValid()
-    {
-        m_WordStatus?.SetText("New Word Found !");
-        Color color = Color.white;
-        ColorUtility.TryParseHtmlString(Constants.VALID_COLOR, out color);
-        m_WordStatus.color = color;
-        yield return wordStatusDelay;
-        m_WordStatus.color = Color.clear;
-        m_Routine = null;
-    }
     IEnumerator UpdateWordStatusForExisting()
-    {
+    {   
+        // Need something which tells that word already exists
+
         m_WordStatus?.SetText("Word already exists");
         Color color = Color.white;
         ColorUtility.TryParseHtmlString(Constants.EXISTING_COLOR, out color);
@@ -233,18 +254,10 @@ public class StatsView : MonoBehaviour
         m_WordStatus.color = Color.clear;
         m_Routine = null;
     }
-    IEnumerator UpdateWordStatusForInvalid()
-    {
-        m_WordStatus?.SetText("Word does not exists");
-        Color color = Color.white;
-        ColorUtility.TryParseHtmlString(Constants.INVALID_COLOR, out color);
-        m_WordStatus.color = color;
-        yield return wordStatusDelay;
-        m_WordStatus.color = Color.clear;
-        m_Routine = null;
-    }
 
     #endregion
+
+
 
 
     private void InitiateBubblesAnimation()
@@ -257,15 +270,11 @@ public class StatsView : MonoBehaviour
     }
 
 
-
-
     private void DeinitListeners()
     {
         EventManager.OnValidWordSelected.RemoveListener(m_Controller.ProcessValidWord);
         EventManager.IsGameOver.RemoveListener(m_Controller.GetIsGameOver);
-        EventManager.OnValidWordSelected.RemoveListener(UpdateValidWordStatus);
         EventManager.OnExistingWordSelected.RemoveListener(UpdateExistingWordStatus);
-        EventManager.OnInvalidWordSelected.RemoveListener(UpdateInvalidWordStatus);
 
         btn_Pause.onClick.RemoveListener(TriggerGamePause);
         btn_Resume.onClick.RemoveListener(ResumeGame);
@@ -278,8 +287,14 @@ public class StatsView : MonoBehaviour
     private void OnDisable()
     {
         DeinitListeners();
+
+        CollectionPool<Dictionary<string, (ExistingWord, int)>, KeyValuePair<string, (ExistingWord, int)>>.Release(existingWords);
+        existingWords = null;
+
         if (DOTween.IsTweening(scrollView))
             DOTween.Kill(scrollView);
+
+
         DOTween.KillAll();
     }
 

@@ -10,6 +10,8 @@ using Cysharp.Threading.Tasks;
 
 public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler
 {
+    [SerializeField] CanvasGroup cg_main;
+    [SerializeField] RectTransform shakerRoot;
     [SerializeField] TextMeshProUGUI m_Text;
     [SerializeField] Image m_MainImage;
     [SerializeField] Image m_BonusImage;
@@ -33,6 +35,7 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
     [Header("Internals")]
     private bool m_IsBonus = false;
     private bool m_IsBlocked = false;
+    private bool m_IsChangingBlocked = false;
     public bool IsBonus
     {
         get => m_IsBonus;
@@ -121,6 +124,10 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
 
     private void SetAsBlockedTile(bool value)
     {
+        if (m_IsChangingBlocked)
+            return;
+
+        m_IsChangingBlocked = true;
         AnimateTileBlocker(value, () =>
         {
             m_IsBlocked = value;
@@ -140,6 +147,19 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
         }
 
         OnComplete?.Invoke();
+        m_IsChangingBlocked = false;
+    }
+
+
+
+    [ContextMenu("ShowWrong")]
+    public void VibrateOnWrong()
+    {
+        cg_main.interactable = cg_main.blocksRaycasts = false;
+        shakerRoot.DOShakeAnchorPos(0.5f,Vector2.right * 25.0f,25,0).SetEase(Ease.Linear).SetLoops(1 , LoopType.Yoyo).OnComplete(() => 
+        {
+            cg_main.interactable = cg_main.blocksRaycasts = true;
+        });
     }
 
     private void ResetTileBlocker()
@@ -148,7 +168,7 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
         m_IsBlocked = false;
     }
 
-
+    #region UI-Callbacks
 
     public void OnPointerEnter(PointerEventData eventData)
     {
@@ -177,9 +197,10 @@ public class LetterTile : MonoBehaviour, IPointerDownHandler, IPointerEnterHandl
         EventManager.OnSelectionEnded.Invoke();
     }
 
+    #endregion
+
     public void OnMainColorUpdated(Color newColor , float transitionDelay)
     {
-        //mainColor = newColor;
         StartCoroutine(UpdateColor(newColor , transitionDelay));
     }
 
