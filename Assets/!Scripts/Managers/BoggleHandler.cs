@@ -79,23 +79,32 @@ public class BoggleHandler : MonoBehaviour
         {
             if (i.IsBlocked)
             {
+                foreach (var j in aux)
+                {
+                    j.VibrateOnWrong();
+                }
                 aux.Clear();
                 return;
             }
         }
 
-        Debug.Log("Word Selected : " + str);
-
         switch (EventManager.OnValidateWord.Invoke(str))
         {
             case WordValidationType.VALID:
-                OnValidWord(aux); // TODO: Remove ToList() alloc
+                OnValidWord(aux);
                 break;
             case WordValidationType.INVALID:
+
+                // Shake the wrong ones
+                foreach (var j in aux)
+                {
+                    j.VibrateOnWrong();
+                }
+
                 OnInvalidWord();
                 break;
             case WordValidationType.EXISTING:
-                OnExistingWord();
+                OnExistingWord(str);
                 break;
             default:
                 Debug.LogError("Unknown validation verdict");
@@ -133,9 +142,9 @@ public class BoggleHandler : MonoBehaviour
         EventManager.OnValidWordSelected.Invoke(tiles);
     }
 
-    private void OnExistingWord()
+    private void OnExistingWord(string str)
     {
-        EventManager.OnExistingWordSelected.Invoke();
+        EventManager.OnExistingWordSelected.Invoke(str);
     }
 
     private void OnInvalidWord()

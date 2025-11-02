@@ -210,6 +210,8 @@ GameObject:
   - component: {fileID: 88571444}
   - component: {fileID: 88571443}
   - component: {fileID: 88571442}
+  - component: {fileID: 88571446}
+  - component: {fileID: 88571445}
   m_Layer: 5
   m_Name: StartButton
   m_TagString: Untagged
@@ -235,7 +237,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.14535765, y: 0.66104794}
   m_AnchorMax: {x: 0.85189945, y: 0.904251}
-  m_AnchoredPosition: {x: -1413.9999, y: 0}
+  m_AnchoredPosition: {x: -1414, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &88571442
@@ -320,6 +322,62 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 88571440}
   m_CullTransparentMesh: 1
+--- !u!114 &88571445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 88571440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 120310f1226066d4cb376e503c1952ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onPointerDown:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 88571446}
+        m_TargetAssemblyTypeName: ClickAnimations, Assembly-CSharp
+        m_MethodName: ScaleDownAnimation
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onPointerUp:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 88571446}
+        m_TargetAssemblyTypeName: ClickAnimations, Assembly-CSharp
+        m_MethodName: ScaleUpAnimation
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  RestrictToInteractable: 1
+--- !u!114 &88571446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 88571440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d99d7cca287b584bb24915206a5e6bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canIdleBounce: 1
 --- !u!1 &109976201
 GameObject:
   m_ObjectHideFlags: 0
@@ -332,6 +390,8 @@ GameObject:
   - component: {fileID: 109976205}
   - component: {fileID: 109976204}
   - component: {fileID: 109976203}
+  - component: {fileID: 109976207}
+  - component: {fileID: 109976206}
   m_Layer: 5
   m_Name: SettingsButton
   m_TagString: Untagged
@@ -440,6 +500,62 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 109976201}
   m_CullTransparentMesh: 1
+--- !u!114 &109976206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 109976201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d99d7cca287b584bb24915206a5e6bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canIdleBounce: 0
+--- !u!114 &109976207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 109976201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 120310f1226066d4cb376e503c1952ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onPointerDown:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 109976206}
+        m_TargetAssemblyTypeName: ClickAnimations, Assembly-CSharp
+        m_MethodName: ScaleDownAnimation
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onPointerUp:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 109976206}
+        m_TargetAssemblyTypeName: ClickAnimations, Assembly-CSharp
+        m_MethodName: ScaleUpAnimation
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  RestrictToInteractable: 1
 --- !u!1 &165613288
 GameObject:
   m_ObjectHideFlags: 0
@@ -996,17 +1112,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 6212757735603118224, guid: a8077eb29b07acf42af6c7615cddd013, type: 3}
   m_PrefabInstance: {fileID: 368611326501162838}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &956701862 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1367628436291077054, guid: a8077eb29b07acf42af6c7615cddd013, type: 3}
-  m_PrefabInstance: {fileID: 368611326501162838}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &956999828 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2044816843435747562, guid: a8077eb29b07acf42af6c7615cddd013, type: 3}
@@ -1016,17 +1121,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 806a4cd91d933484eb8ab16b613e9b73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &958329613 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 600706323254318112, guid: a8077eb29b07acf42af6c7615cddd013, type: 3}
-  m_PrefabInstance: {fileID: 368611326501162838}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c270ea6536fedef44a71fa8a43d759cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &965299689
@@ -1531,9 +1625,6 @@ MonoBehaviour:
   cg_main: {fileID: 1664087668}
   btn_start: {fileID: 88571442}
   btn_settings: {fileID: 109976203}
-  circleMask: {fileID: 956701862}
-  BlackOverlay: {fileID: 958329613}
-  Reference: {fileID: 0}
   transitionView: {fileID: 956999828}
   menuBg: {fileID: 73852802}
   wordImg: {fileID: 1141330586}
@@ -2015,7 +2106,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8303374213250607089, guid: f4ec1b250e88ffa4f8e944ddac001689, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 120.44971
+      value: 120.44922
       objectReference: {fileID: 0}
     - target: {fileID: 8303374213250607089, guid: f4ec1b250e88ffa4f8e944ddac001689, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

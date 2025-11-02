@@ -82,6 +82,7 @@ public class StatsController
             if (i.IsBonus)
             {
                 FreeBonusTile(i);
+                i.PlayBonusParticles();
                 bonusLetterTiles++;
             }
         }

@@ -28,10 +28,11 @@ public class MenuView : MonoBehaviour
 
     [Space(10)]
     [SerializeField] private LoadingView loadingView;
+    private AsyncOperation op;
     private void OnEnable()
     {   
         // Wait for callback if words are not loaded
-        if (!WordsManager.areWordsLoaded)
+        if (!WordsManager.areWordsLoaded || !WordsManager.areCheckerWordsLoaded)
         {
             cg_main.interactable = false;
             
@@ -41,12 +42,14 @@ public class MenuView : MonoBehaviour
             SetMenuInteractable();
         }
 
-        WordsManager.OnWordsLoaded.AddListener(SetMenuInteractable);
-        btn_start?.onClick.AddListener(SetupLoadingGameScene);
+        WordsManager.onWordsLoaded += SetMenuInteractable;
+        btn_start?.onClick.AddListener(InitiateGameScene);
     }
 
     private async void Start()
     {
+        Application.targetFrameRate = 144;
+        SetupLoadingGameScene();
         InitiateBGColorTweening();
         await PrepareStartup();
         InitiatePropAnimations();
@@ -121,26 +124,30 @@ public class MenuView : MonoBehaviour
 
     private async void SetupLoadingGameScene()
     {
-        cg_main.interactable = false;
-
-        loadingView.InitiateLoading();
-
         await UniTask.Yield();
-        AsyncOperation op = SceneManager.LoadSceneAsync(1);
+        op = SceneManager.LoadSceneAsync(1);
         op.allowSceneActivation = false;
+    }
 
+    private async void InitiateGameScene()
+    {
+        loadingView.InitiateLoading();
+        cg_main.interactable = false;
         await UniTask.WaitUntil(() => op.progress >= 0.9f);
-
         await UniTask.Delay(500);
         loadingView.StopLoading();
-        transitionView.EndTransition(() => { op.allowSceneActivation = true; });
+        transitionView.EndTransition(() =>
+        {
+            op.allowSceneActivation = true;
+        });
     }
+
 
 
     private void OnDisable()
     {
-        WordsManager.OnWordsLoaded.RemoveListener(SetMenuInteractable);
-        btn_start?.onClick.RemoveListener(SetupLoadingGameScene);
+        WordsManager.onWordsLoaded -= SetMenuInteractable;
+        btn_start?.onClick.RemoveListener(InitiateGameScene);
         DOTween.KillAll();
     }
 
